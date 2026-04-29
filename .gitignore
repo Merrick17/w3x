@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.w3x/logs/
+.w3x/memory.sqlite
+.w3x/state.json
+.w3x/permissions-learned.json
+.w3x/MEMORY.local.md
+.env
+*.w3x.bak

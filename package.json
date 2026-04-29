@@ -1,0 +1,76 @@
+{
+  "name": "w3x",
+  "version": "2.1.0",
+  "description": "w3x — autonomous AI coding agent with terminal UI",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "w3x": "dist/index.js"
+  },
+  "files": [
+    "dist/"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "node --import tsx/esm src/index.tsx",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write src/",
+    "format:check": "prettier --check src/"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "coding",
+    "ollama",
+    "cli",
+    "terminal",
+    "tui"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.71",
+    "@ai-sdk/google": "^3.0.64",
+    "@ai-sdk/openai": "^3.0.53",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@solana/kit": "^6.8.0",
+    "@tavily/ai-sdk": "^0.4.1",
+    "ai": "^6.0.168",
+    "ai-sdk-ollama": "^3.8.3",
+    "chokidar": "^5.0.0",
+    "diff": "^9.0.0",
+    "dotenv": "^17.4.2",
+    "execa": "^8.0.0",
+    "fast-glob": "^3.3.3",
+    "ink": "^7.0.1",
+    "ink-text-input": "^2.0.0",
+    "react": "^19.2.5",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^6.0.1",
+    "viem": "^2.48.4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@vitest/coverage-v8": "^3.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "prettier": "^3.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

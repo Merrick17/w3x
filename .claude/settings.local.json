@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm show *)",
+      "Bash(npm search *)",
+      "Bash(curl -s https://registry.npmjs.org/@inkjs/ui/2.0.0)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(list\\(d.get\\('exports',{}\\).keys\\(\\)\\)[:30]\\)\")",
+      "Bash(npm pack *)",
+      "Bash(npm install *)",
+      "Bash(npm view *)",
+      "Bash(npx tsc *)",
+      "Bash(node *)",
+      "Bash(2>&1)",
+      "Bash(npm run *)",
+      "Bash(npm test *)"
+    ]
+  }
+}
