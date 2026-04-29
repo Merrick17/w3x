@@ -30,8 +30,7 @@ export const memoryTools = {
   }),
 
   recallMemory: tool({
-    description:
-      "Recall a saved memory by key, or list all memories if no key given.",
+    description: "Recall a saved memory by key, or list all memories if no key given.",
     inputSchema: z.object({
       key: z.string().optional().describe("Memory key to recall (omit to list all)"),
     }),
@@ -76,11 +75,17 @@ export const memoryTools = {
       type: z
         .enum(["user", "feedback", "project", "reference"])
         .describe("Memory type: user, feedback, project, or reference"),
-      body: z.string().describe("Memory content. For feedback/project types, structure as: rule/fact, then Why: and How to apply: lines."),
+      body: z
+        .string()
+        .describe(
+          "Memory content. For feedback/project types, structure as: rule/fact, then Why: and How to apply: lines.",
+        ),
       target: z
         .enum(["project", "local"])
         .optional()
-        .describe("Save to project (.w3x/MEMORY.md) or local (.w3x/MEMORY.local.md). Default: project."),
+        .describe(
+          "Save to project (.w3x/MEMORY.md) or local (.w3x/MEMORY.local.md). Default: project.",
+        ),
     }),
     execute: async ({
       title,
@@ -95,10 +100,7 @@ export const memoryTools = {
       body: string;
       target?: "project" | "local";
     }) => {
-      const path = await saveMemoryEntry(
-        { title, description, type, body },
-        target || "project",
-      );
+      const path = await saveMemoryEntry({ title, description, type, body }, target || "project");
       return {
         success: true,
         path,

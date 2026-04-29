@@ -55,10 +55,7 @@ export class McpClient {
    * Connect to an MCP server and register its tools.
    */
   async connect(config: McpServerConfig): Promise<{ name: string; tools: number }> {
-    const client = new Client(
-      { name: "w3x", version: "2.0.0" },
-      { capabilities: {} },
-    );
+    const client = new Client({ name: "w3x", version: "2.0.0" }, { capabilities: {} });
 
     const transport = new StdioClientTransport({
       command: config.command,
@@ -92,11 +89,11 @@ export class McpClient {
   /**
    * Build an AI SDK-compatible tool wrapper for an MCP tool.
    */
-  private buildAiSdkTool(
-    serverName: string,
-    mcpTool: McpTool,
-  ): unknown {
-    type JsonSchemaLike = { properties?: Record<string, { type?: string; description?: string }>; required?: string[] };
+  private buildAiSdkTool(serverName: string, mcpTool: McpTool): unknown {
+    type JsonSchemaLike = {
+      properties?: Record<string, { type?: string; description?: string }>;
+      required?: string[];
+    };
     type McpContent = { text?: string };
     type McpResult = { isError?: boolean; content?: McpContent[] };
     // Build a loose zod schema from JSON schema properties

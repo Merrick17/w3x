@@ -38,13 +38,19 @@ export class ToolRegistry {
               }
             }
           } catch (e) {
-            logger.warn("tool-registry", `Failed to load plugin ${file}: ${logger.fromError("plugin", e)}`);
+            logger.warn(
+              "tool-registry",
+              `Failed to load plugin ${file}: ${logger.fromError("plugin", e)}`,
+            );
           }
         }
       }
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code !== "ENOENT") {
-        logger.warn("tool-registry", `Error reading plugins directory: ${logger.fromError("plugins", e)}`);
+        logger.warn(
+          "tool-registry",
+          `Error reading plugins directory: ${logger.fromError("plugins", e)}`,
+        );
       }
     }
     this.invalidateCache();

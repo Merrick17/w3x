@@ -15,7 +15,11 @@ export class EventBus {
 
   emit(event: string, ...args: unknown[]): void {
     this.handlers.get(event)?.forEach((h) => {
-      try { h(...args); } catch { /* silently ignore */ }
+      try {
+        h(...args);
+      } catch {
+        /* silently ignore */
+      }
     });
   }
 

@@ -20,10 +20,15 @@ export const screenshotTools = {
       await fs.mkdir(resolve(WS, ".w3x"), { recursive: true });
       const cmd = `npx playwright screenshot ${url} "${fullPath}"`;
       const isWindows = process.platform === "win32";
-      const r = await execaCommand(cmd, { cwd: WS, shell: isWindows ? "powershell" : true, reject: false });
+      const r = await execaCommand(cmd, {
+        cwd: WS,
+        shell: isWindows ? "powershell" : true,
+        reject: false,
+      });
       return {
         success: r.exitCode === 0,
-        message: r.exitCode === 0 ? `Screenshot saved to ${filename}` : `Failed: ${r.stderr || r.stdout}`,
+        message:
+          r.exitCode === 0 ? `Screenshot saved to ${filename}` : `Failed: ${r.stderr || r.stdout}`,
         path: filename,
       };
     },

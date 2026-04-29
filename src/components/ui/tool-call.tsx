@@ -29,19 +29,21 @@ export const ToolCall = ({
   focused = false,
 }: ToolCallProps) => {
   const theme = useTheme();
-  const initialCollapsed =
-    defaultCollapsed && status !== "running" && status !== "error";
+  const initialCollapsed = defaultCollapsed && status !== "running" && status !== "error";
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   const frame = useAnimation(12);
 
   const spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
   const spinnerIcon = spinnerFrames[frame % spinnerFrames.length] ?? "⠋";
 
-  useInput((input, key) => {
-    if (collapsible && (key.return || input === " ")) {
-      setCollapsed((c) => !c);
-    }
-  }, { isActive: focused });
+  useInput(
+    (input, key) => {
+      if (collapsible && (key.return || input === " ")) {
+        setCollapsed((c) => !c);
+      }
+    },
+    { isActive: focused },
+  );
 
   const statusIcon = () => {
     switch (status) {
@@ -121,9 +123,7 @@ export const ToolCall = ({
                 Result:
               </Text>
               <Text dimColor>
-                {typeof result === "string"
-                  ? result
-                  : JSON.stringify(result, null, 2)}
+                {typeof result === "string" ? result : JSON.stringify(result, null, 2)}
               </Text>
             </Box>
           )}

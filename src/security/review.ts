@@ -17,7 +17,10 @@ interface ReviewResult {
 
 const SECRET_PATTERNS: { name: string; pattern: RegExp }[] = [
   { name: "AWS Access Key", pattern: /AKIA[0-9A-Z]{16}/g },
-  { name: "Generic API Key", pattern: /(?:api[_-]?key|apikey|API_KEY)\s*[:=]\s*['"][\w-]{20,}['"]/gi },
+  {
+    name: "Generic API Key",
+    pattern: /(?:api[_-]?key|apikey|API_KEY)\s*[:=]\s*['"][\w-]{20,}['"]/gi,
+  },
   { name: "Private Key (PEM)", pattern: /-----BEGIN\s+(?:RSA|EC|DSA|OPENSSH)\s+PRIVATE KEY-----/g },
   { name: "JWT Token", pattern: /eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]+/g },
   { name: "Slack Token", pattern: /xox[baprs]-[0-9A-Za-z-]+/g },
@@ -73,7 +76,10 @@ export async function reviewFile(filePath: string): Promise<ReviewResult> {
       }
     }
   } catch (err) {
-    return { issues: [], error: `Failed to read ${filePath}: ${err instanceof Error ? err.message : String(err)}` };
+    return {
+      issues: [],
+      error: `Failed to read ${filePath}: ${err instanceof Error ? err.message : String(err)}`,
+    };
   }
 
   return { issues };

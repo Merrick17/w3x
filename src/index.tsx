@@ -56,7 +56,9 @@ if (args.includes("--version")) {
 const cliModel = args.includes("-m") ? args[args.indexOf("-m") + 1] : undefined;
 const cliBaseURL = args.includes("-u") ? args[args.indexOf("-u") + 1] : undefined;
 const cliMode = args.includes("--mode") ? args[args.indexOf("--mode") + 1] : undefined;
-const cliMaxSteps = args.includes("--max-steps") ? parseInt(args[args.indexOf("--max-steps") + 1], 10) : undefined;
+const cliMaxSteps = args.includes("--max-steps")
+  ? parseInt(args[args.indexOf("--max-steps") + 1], 10)
+  : undefined;
 
 const settings = loadSettings({
   model: cliModel ?? process.env.W3X_MODEL,

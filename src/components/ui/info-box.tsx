@@ -96,16 +96,12 @@ const InfoBoxRow = ({
           {value}
         </Text>
       )}
-      {valueDetail && (
-        <Text color={valueColor ?? "cyan"}>{`  ${valueDetail}`}</Text>
-      )}
+      {valueDetail && <Text color={valueColor ?? "cyan"}>{`  ${valueDetail}`}</Text>}
     </Box>
   );
 };
 
-const InfoBoxTreeRow = (props: Omit<InfoBoxRowProps, "tree">) => (
-  <InfoBoxRow {...props} tree />
-);
+const InfoBoxTreeRow = (props: Omit<InfoBoxRowProps, "tree">) => <InfoBoxRow {...props} tree />;
 
 export const InfoBox = Object.assign(InfoBoxRoot, {
   Header: InfoBoxHeader,

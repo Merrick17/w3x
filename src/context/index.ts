@@ -34,10 +34,7 @@ function truncateWithTail(text: string, maxLen: number): string {
  * Intelligently truncate a tool output based on its typical size.
  * Preserves the beginning and end of the content so the LLM can still reason.
  */
-export function truncateToolOutput(
-  output: unknown,
-  toolName: string,
-): unknown {
+export function truncateToolOutput(output: unknown, toolName: string): unknown {
   // Only truncate string outputs — objects/arrays pass through
   if (typeof output !== "string") return output;
 
@@ -70,15 +67,10 @@ function toolMaxLength(toolName: string): number {
 /**
  * Estimate total context token usage from the current message array.
  */
-export function estimateContextTokens(
-  messages: Array<{ role: string; content: unknown }>,
-): number {
+export function estimateContextTokens(messages: Array<{ role: string; content: unknown }>): number {
   let total = 0;
   for (const msg of messages) {
-    const text =
-      typeof msg.content === "string"
-        ? msg.content
-        : JSON.stringify(msg.content);
+    const text = typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content);
     total += estimateTokens(text);
   }
   return total;

@@ -7,12 +7,17 @@ const WS = cwd();
 
 export const gitTools = {
   gitStatus: tool({
-    description: "Get the current git status of the project. Shows branch, staged/unstaged changes, and recent commits.",
+    description:
+      "Get the current git status of the project. Shows branch, staged/unstaged changes, and recent commits.",
     inputSchema: z.object({}),
     execute: async () => {
       try {
         const [branch, status, log, diff] = await Promise.all([
-          execaCommand("git rev-parse --abbrev-ref HEAD", { cwd: WS, reject: false, timeout: 5000 }),
+          execaCommand("git rev-parse --abbrev-ref HEAD", {
+            cwd: WS,
+            reject: false,
+            timeout: 5000,
+          }),
           execaCommand("git status --short", { cwd: WS, reject: false, timeout: 5000 }),
           execaCommand("git log --oneline -10", { cwd: WS, reject: false, timeout: 5000 }),
           execaCommand("git diff --stat", { cwd: WS, reject: false, timeout: 5000 }),
@@ -37,7 +42,8 @@ export const gitTools = {
     }),
     execute: async ({ target, lines }: { target?: string; lines?: number }) => {
       const maxLines = lines || 200;
-      const cmd = target === "staged" ? "git diff --cached" : target ? `git diff "${target}"` : "git diff";
+      const cmd =
+        target === "staged" ? "git diff --cached" : target ? `git diff "${target}"` : "git diff";
       const r = await execaCommand(cmd, { cwd: WS, reject: false, timeout: 10000 });
       const output = (r.stdout || "").split("\n").slice(0, maxLines).join("\n");
       return { diff: output, truncated: (r.stdout || "").split("\n").length > maxLines };
@@ -51,7 +57,15 @@ export const gitTools = {
       author: z.string().optional().describe("Filter by author"),
       file: z.string().optional().describe("Filter by file path"),
     }),
-    execute: async ({ count, author, file }: { count?: number; author?: string; file?: string }) => {
+    execute: async ({
+      count,
+      author,
+      file,
+    }: {
+      count?: number;
+      author?: string;
+      file?: string;
+    }) => {
       let cmd = `git log --oneline -${count || 10}`;
       if (author) cmd += ` --author="${author}"`;
       if (file) cmd += ` -- "${file}"`;

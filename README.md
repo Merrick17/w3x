@@ -16,6 +16,7 @@ Built with [Ink](https://github.com/vadimdemedes/ink) (React for the terminal), 
 ## Features
 
 ### Core Agent
+
 - **Autonomous execution** — Give it a task and it figures out the steps
 - **Plan mode** — Decompose complex tasks into numbered plans before touching code
 - **Build mode** — Full read/write access for autonomous coding
@@ -23,20 +24,22 @@ Built with [Ink](https://github.com/vadimdemedes/ink) (React for the terminal), 
 - **Multi-step reasoning** — Thinks before acting, validates after acting
 
 ### Tools (22 built-in)
-| Category | Tools |
-|---|---|
-| **Files** | `read`, `write`, `edit` (surgical replace), `exactEdit`, `listFiles`, `treeView` |
-| **Search** | `glob` (pattern matching), `grep` (regex search), `webSearch`, `webFetch` |
-| **Shell** | `bash` / `runCommand` |
-| **Git** | `gitStatus`, `gitDiff`, `gitLog`, commit via `/commit` |
-| **Sub-agents** | `agent` (delegate to specialist), `delegateTask` |
-| **Task tracking** | `taskCreate`, `taskUpdate`, `taskList`, `taskGet` |
-| **Scheduling** | `cronCreate`, `cronDelete`, `cronList` |
-| **Memory** | `saveMemory`, `recallMemory` (persistent across sessions via SQLite) |
-| **Web3** | `readChain` (EVM), `sendTransaction`, `getSolanaBalance` |
-| **Misc** | `ask` (clarifying questions), `takeScreenshot` (UI verification) |
+
+| Category          | Tools                                                                            |
+| ----------------- | -------------------------------------------------------------------------------- |
+| **Files**         | `read`, `write`, `edit` (surgical replace), `exactEdit`, `listFiles`, `treeView` |
+| **Search**        | `glob` (pattern matching), `grep` (regex search), `webSearch`, `webFetch`        |
+| **Shell**         | `bash` / `runCommand`                                                            |
+| **Git**           | `gitStatus`, `gitDiff`, `gitLog`, commit via `/commit`                           |
+| **Sub-agents**    | `agent` (delegate to specialist), `delegateTask`                                 |
+| **Task tracking** | `taskCreate`, `taskUpdate`, `taskList`, `taskGet`                                |
+| **Scheduling**    | `cronCreate`, `cronDelete`, `cronList`                                           |
+| **Memory**        | `saveMemory`, `recallMemory` (persistent across sessions via SQLite)             |
+| **Web3**          | `readChain` (EVM), `sendTransaction`, `getSolanaBalance`                         |
+| **Misc**          | `ask` (clarifying questions), `takeScreenshot` (UI verification)                 |
 
 ### Terminal UI
+
 - **Rich TUI** — Theme-aware (One Dark), bordered panels, collapsible blocks
 - **Live streaming** — See the agent think, reason, and execute in real time
 - **Command palette** — `Ctrl+K` fuzzy search for all actions
@@ -47,15 +50,18 @@ Built with [Ink](https://github.com/vadimdemedes/ink) (React for the terminal), 
 - **Welcome screen** — Getting-started tips on first launch
 
 ### Memory & Persistence
+
 - **SQLite-backed memory** — Facts and session summaries survive restarts
 - **Markdown memory (`MEMORY.md`)** — Human-readable project context the agent maintains
 - **Learned permissions** — Remembers your tool-approval decisions
 
 ### Web3
+
 - EVM chain reads and transaction sending (`viem`)
 - Solana balance queries and interactions (`@solana/kit`)
 
 ### Extensibility
+
 - **MCP (Model Context Protocol)** — Connect external tools and data sources
 - **Plugins** — Plugin installer with Solana + frontend plugins included
 - **Hooks** — Startup/shutdown hook engine
@@ -67,15 +73,18 @@ Built with [Ink](https://github.com/vadimdemedes/ink) (React for the terminal), 
 ## Installation
 
 ### Prerequisites
+
 - **Node.js >= 20.0.0**
 - An interactive terminal (TTY)
 
 ### Install from npm
+
 ```bash
 npm install -g w3x
 ```
 
 ### Run without installing
+
 ```bash
 npx w3x
 ```
@@ -105,6 +114,7 @@ W3X auto-detects available providers and populates the model selector accordingl
 ## Usage
 
 ### Quick start
+
 ```bash
 # Launch the interactive terminal UI
 w3x
@@ -123,6 +133,7 @@ w3x -m qwen3.5:cloud -u http://localhost:11434
 ```
 
 ### CLI options
+
 ```
 w3x [options]
 
@@ -139,16 +150,17 @@ Options:
 
 ### Keyboard shortcuts
 
-| Shortcut | Action |
-|---|---|
-| `Ctrl+K` | Open command palette |
-| `Ctrl+L` | Toggle logs sidebar |
-| `Ctrl+M` | Open model selector |
-| `Ctrl+H` | Show help |
-| `Ctrl+X` / `Ctrl+C` | Exit |
+| Shortcut            | Action               |
+| ------------------- | -------------------- |
+| `Ctrl+K`            | Open command palette |
+| `Ctrl+L`            | Toggle logs sidebar  |
+| `Ctrl+M`            | Open model selector  |
+| `Ctrl+H`            | Show help            |
+| `Ctrl+X` / `Ctrl+C` | Exit                 |
 
 ### Interaction flow
-1. **Type a task** — e.g., *"Add input validation to the signup form"*
+
+1. **Type a task** — e.g., _"Add input validation to the signup form"_
 2. **Agent reasons** — Shows `⠋ Thinking...` spinner, then reasoning in a collapsible block
 3. **Agent acts** — Executes tools (file reads, edits, shell commands) shown in real time with spinners
 4. **Streaming output** — Agent's text responses stream live
@@ -160,13 +172,14 @@ Options:
 
 Settings are merged in order (later overrides earlier):
 
-| File | Scope |
-|---|---|
-| `~/.w3x/settings.json` | User-level (all projects) |
-| `.w3x/settings.json` | Project-level (version-controlled) |
-| `.w3x/settings.local.json` | Local overrides (gitignored) |
+| File                       | Scope                              |
+| -------------------------- | ---------------------------------- |
+| `~/.w3x/settings.json`     | User-level (all projects)          |
+| `.w3x/settings.json`       | Project-level (version-controlled) |
+| `.w3x/settings.local.json` | Local overrides (gitignored)       |
 
 Environment variables:
+
 - `W3X_MODEL` — Default model
 - `W3X_BASE_URL` — Default base URL (for Ollama or custom endpoints)
 - `W3X_DEBUG` — Enable debug logging
@@ -176,6 +189,7 @@ Environment variables:
 ## Development
 
 ### Setup
+
 ```bash
 git clone <repo-url>
 cd web3agent
@@ -183,6 +197,7 @@ npm install
 ```
 
 ### Scripts
+
 ```bash
 npm run dev          # Run in dev mode (tsx, no build needed)
 npm run build        # Compile TypeScript → dist/
@@ -198,6 +213,7 @@ npm run format:check # Check formatting
 ```
 
 ### Project structure
+
 ```
 src/
 ├── index.tsx               # CLI entry point (arg parsing, bootstrap)
@@ -245,19 +261,20 @@ src/
 ```
 
 ### Tech stack
-| Layer | Technology |
-|---|---|
-| **UI** | [Ink](https://github.com/vadimdemedes/ink) v7 (React for terminals) + React 19 |
-| **AI/LLM** | [Vercel AI SDK](https://sdk.vercel.ai/) v6 |
-| **Models** | `@ai-sdk/anthropic`, `@ai-sdk/openai`, `@ai-sdk/google`, `ai-sdk-ollama` |
-| **Web3** | `viem` (EVM), `@solana/kit` (Solana) |
-| **DB** | `sqlite3` (memory persistence) |
-| **MCP** | `@modelcontextprotocol/sdk` |
-| **File watch** | `chokidar` |
-| **Diffing** | `diff` |
-| **Validation** | `zod` |
-| **Testing** | `vitest` |
-| **Lint/Format** | ESLint 9 + Prettier |
+
+| Layer           | Technology                                                                     |
+| --------------- | ------------------------------------------------------------------------------ |
+| **UI**          | [Ink](https://github.com/vadimdemedes/ink) v7 (React for terminals) + React 19 |
+| **AI/LLM**      | [Vercel AI SDK](https://sdk.vercel.ai/) v6                                     |
+| **Models**      | `@ai-sdk/anthropic`, `@ai-sdk/openai`, `@ai-sdk/google`, `ai-sdk-ollama`       |
+| **Web3**        | `viem` (EVM), `@solana/kit` (Solana)                                           |
+| **DB**          | `sqlite3` (memory persistence)                                                 |
+| **MCP**         | `@modelcontextprotocol/sdk`                                                    |
+| **File watch**  | `chokidar`                                                                     |
+| **Diffing**     | `diff`                                                                         |
+| **Validation**  | `zod`                                                                          |
+| **Testing**     | `vitest`                                                                       |
+| **Lint/Format** | ESLint 9 + Prettier                                                            |
 
 ---
 
@@ -272,6 +289,7 @@ Contributions are welcome. Here's how:
 5. **Open a PR** — Include a clear description of the change and why
 
 ### Coding conventions
+
 - **TypeScript strict mode** — All code must pass `tsc --noEmit` with zero errors
 - **No dead code** — Unused imports/variables are caught by the compiler
 - **Ink compound components** — Use `Object.assign(Root, { Sub1, Sub2 })` for composable UI
@@ -280,6 +298,7 @@ Contributions are welcome. Here's how:
 - **Keep it small** — PRs should be focused. Large refactors should be discussed first
 
 ### Areas to contribute
+
 - **New tools** — Add integrations (databases, APIs, cloud services) in `src/tool/`
 - **Web3** — Extend blockchain support in `src/tool/web3.ts`
 - **Plugins** — Build plugin modules in `src/plugins/`

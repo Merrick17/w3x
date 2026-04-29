@@ -81,52 +81,55 @@ export const CommandPalette = ({
     .toSorted((a, b) => fuzzyScore(a.label, query) - fuzzyScore(b.label, query))
     .slice(0, maxItems);
 
-  useInput((input, key) => {
-    if (!isOpen) {
-      return;
-    }
+  useInput(
+    (input, key) => {
+      if (!isOpen) {
+        return;
+      }
 
-    if (key.escape) {
-      setQuery("");
-      setCursor(0);
-      onClose?.();
-      return;
-    }
-
-    if (key.upArrow) {
-      setCursor((c) => Math.max(0, c - 1));
-      return;
-    }
-
-    if (key.downArrow) {
-      setCursor((c) => Math.min(filtered.length - 1, c + 1));
-      return;
-    }
-
-    if (key.return) {
-      const cmd = filtered[cursor];
-      if (cmd) {
-        cmd.onSelect?.();
+      if (key.escape) {
         setQuery("");
         setCursor(0);
         onClose?.();
+        return;
       }
-      return;
-    }
 
-    if (key.backspace || key.delete) {
-      setQuery((q) => q.slice(0, -1));
+      if (key.upArrow) {
+        setCursor((c) => Math.max(0, c - 1));
+        return;
+      }
+
+      if (key.downArrow) {
+        setCursor((c) => Math.min(filtered.length - 1, c + 1));
+        return;
+      }
+
+      if (key.return) {
+        const cmd = filtered[cursor];
+        if (cmd) {
+          cmd.onSelect?.();
+          setQuery("");
+          setCursor(0);
+          onClose?.();
+        }
+        return;
+      }
+
+      if (key.backspace || key.delete) {
+        setQuery((q) => q.slice(0, -1));
+        setCursor(0);
+        return;
+      }
+
+      if (key.tab) {
+        return;
+      }
+
+      setQuery((q) => q + input);
       setCursor(0);
-      return;
-    }
-
-    if (key.tab) {
-      return;
-    }
-
-    setQuery((q) => q + input);
-    setCursor(0);
-  }, { isActive: isOpen && isActive });
+    },
+    { isActive: isOpen && isActive },
+  );
 
   if (!isOpen) {
     return null;
@@ -152,9 +155,7 @@ export const CommandPalette = ({
     >
       <Box borderStyle="single" borderColor={theme.colors.panelBorder} paddingX={1}>
         <Text color={theme.colors.mutedForeground}>⌘ </Text>
-        <Text
-          color={query ? theme.colors.foreground : theme.colors.mutedForeground}
-        >
+        <Text color={query ? theme.colors.foreground : theme.colors.mutedForeground}>
           {query || placeholder}
         </Text>
         <Text color={theme.colors.focusRing}>█</Text>
@@ -185,9 +186,7 @@ export const CommandPalette = ({
                     <Box flexGrow={1}>
                       <Text
                         color={
-                          isCursor
-                            ? theme.colors.selectionForeground
-                            : theme.colors.foreground
+                          isCursor ? theme.colors.selectionForeground : theme.colors.foreground
                         }
                         bold={isCursor}
                         inverse={isCursor}

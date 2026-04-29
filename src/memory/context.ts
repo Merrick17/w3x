@@ -1,5 +1,5 @@
-import { listFacts, loadRecentSessions } from './store';
-import { loadAllMemoryMd, formatMemoryBlock } from './memory-md';
+import { listFacts, loadRecentSessions } from "./store";
+import { loadAllMemoryMd, formatMemoryBlock } from "./memory-md";
 
 const MAX_CONTEXT_CHARS = 3000;
 
@@ -24,7 +24,7 @@ export async function buildMemoryContext(): Promise<string> {
   }
 
   if (sessions.length > 0) {
-    parts.push('## RECENT SESSION CONTEXT');
+    parts.push("## RECENT SESSION CONTEXT");
     for (const s of sessions) {
       const date = new Date(s.savedAt).toLocaleDateString();
       parts.push(`[${date}] ${s.summary}`);
@@ -32,18 +32,19 @@ export async function buildMemoryContext(): Promise<string> {
   }
 
   if (facts.length > 0) {
-    parts.push('## PERSISTENT FACTS');
+    parts.push("## PERSISTENT FACTS");
     for (const f of facts) {
       parts.push(`${f.key}: ${f.value}`);
     }
   }
 
-  if (parts.length === 0) return '';
+  if (parts.length === 0) return "";
 
-  const block = parts.join('\n');
-  const capped = block.length > MAX_CONTEXT_CHARS
-    ? block.slice(0, MAX_CONTEXT_CHARS) + '\n[...memory truncated]'
-    : block;
+  const block = parts.join("\n");
+  const capped =
+    block.length > MAX_CONTEXT_CHARS
+      ? block.slice(0, MAX_CONTEXT_CHARS) + "\n[...memory truncated]"
+      : block;
 
   return `\n\n---\n# MEMORY\n${capped}\n---`;
 }
@@ -54,15 +55,13 @@ export async function buildMemoryContext(): Promise<string> {
  */
 export function extractSummaryPrompt(messages: Array<{ role: string; content: unknown }>): string {
   const relevant = messages
-    .filter(m => m.role === 'user' || m.role === 'assistant')
+    .filter((m) => m.role === "user" || m.role === "assistant")
     .slice(-20)
-    .map(m => {
-      const text = typeof m.content === 'string'
-        ? m.content
-        : JSON.stringify(m.content);
+    .map((m) => {
+      const text = typeof m.content === "string" ? m.content : JSON.stringify(m.content);
       return `[${m.role}]: ${text.slice(0, 300)}`;
     })
-    .join('\n');
+    .join("\n");
 
   return `Summarise this coding session in 3 sentences. Be specific about: what was built, what files were changed, and any key decisions made.\n\n${relevant}`;
 }

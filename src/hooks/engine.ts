@@ -3,7 +3,12 @@ import type { Settings } from "../config/schema";
 
 // ─── Types ───────────────────────────────────────────────────────────────
 
-export type HookEvent = "before-tool-call" | "after-tool-call" | "on-error" | "on-start" | "on-stop";
+export type HookEvent =
+  | "before-tool-call"
+  | "after-tool-call"
+  | "on-error"
+  | "on-start"
+  | "on-stop";
 
 export interface HookDefinition {
   event: HookEvent;

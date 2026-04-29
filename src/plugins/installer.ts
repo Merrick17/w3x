@@ -21,9 +21,7 @@ export const installPlugin = tool({
   description:
     "Install a custom skill plugin by writing its TypeScript code to the plugins directory. This immediately registers new tools for the agent.",
   inputSchema: z.object({
-    name: z
-      .string()
-      .describe('The name of the plugin (e.g., "weather", "github")'),
+    name: z.string().describe('The name of the plugin (e.g., "weather", "github")'),
     code: z
       .string()
       .describe(

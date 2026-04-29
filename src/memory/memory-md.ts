@@ -37,9 +37,7 @@ function parseMemoryMd(content: string): ParsedMemoryFile {
     if (!trimmed) continue;
 
     // Extract YAML-style frontmatter
-    const fmMatch = trimmed.match(
-      /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/,
-    );
+    const fmMatch = trimmed.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
     if (!fmMatch) continue;
 
     const frontmatter = fmMatch[1];
@@ -118,15 +116,11 @@ export async function saveMemoryEntry(
   entry: MemoryEntry,
   target: "project" | "local" = "project",
 ): Promise<string> {
-  const memDir =
-    target === "local"
-      ? join(cwd(), ".w3x")
-      : join(cwd(), ".w3x");
+  const memDir = target === "local" ? join(cwd(), ".w3x") : join(cwd(), ".w3x");
 
   await mkdir(memDir, { recursive: true });
 
-  const filePath =
-    target === "local" ? LOCAL_MEMORY_PATH : PROJECT_MEMORY_PATH;
+  const filePath = target === "local" ? LOCAL_MEMORY_PATH : PROJECT_MEMORY_PATH;
 
   // Create a sanitized filename for the memory
   const slug = entry.title

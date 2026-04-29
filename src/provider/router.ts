@@ -58,50 +58,45 @@ function buildRouterConfig(defaultModel: string): RouterConfig {
   // For planning, Google's Gemini 2.5 Pro is excellent. If available, prefer it.
   // For coding, prefer Anthropic > OpenAI > Google > Ollama
   // For search, any fast model works
-  const planningModel =
-    hasGoogle
-      ? "gemini-2.5-pro"
-      : hasOpenAI
-        ? "gpt-4.1"
-        : hasAnthropic
-          ? "claude-opus-4-20250514"
-          : configs[provider].planning;
+  const planningModel = hasGoogle
+    ? "gemini-2.5-pro"
+    : hasOpenAI
+      ? "gpt-4.1"
+      : hasAnthropic
+        ? "claude-opus-4-20250514"
+        : configs[provider].planning;
 
-  const codingModel =
-    hasAnthropic
-      ? "claude-sonnet-4-20250514"
-      : hasOpenAI
-        ? "gpt-4o"
-        : hasGoogle
-          ? "gemini-2.5-flash"
-          : configs[provider].coding;
+  const codingModel = hasAnthropic
+    ? "claude-sonnet-4-20250514"
+    : hasOpenAI
+      ? "gpt-4o"
+      : hasGoogle
+        ? "gemini-2.5-flash"
+        : configs[provider].coding;
 
-  const fastModel =
-    hasOpenAI
+  const fastModel = hasOpenAI
+    ? "gpt-4o-mini"
+    : hasAnthropic
+      ? "claude-haiku-4-20250514"
+      : hasGoogle
+        ? "gemini-2.0-flash"
+        : configs[provider].fast;
+
+  const searchModel = hasGoogle
+    ? "gemini-2.0-flash"
+    : hasOpenAI
       ? "gpt-4o-mini"
       : hasAnthropic
         ? "claude-haiku-4-20250514"
-        : hasGoogle
-          ? "gemini-2.0-flash"
-          : configs[provider].fast;
+        : configs[provider].search;
 
-  const searchModel =
-    hasGoogle
-      ? "gemini-2.0-flash"
-      : hasOpenAI
-        ? "gpt-4o-mini"
-        : hasAnthropic
-          ? "claude-haiku-4-20250514"
-          : configs[provider].search;
-
-  const generalModel =
-    hasAnthropic
-      ? "claude-sonnet-4-20250514"
-      : hasOpenAI
-        ? "gpt-4o"
-        : hasGoogle
-          ? "gemini-2.5-flash"
-          : defaultModel;
+  const generalModel = hasAnthropic
+    ? "claude-sonnet-4-20250514"
+    : hasOpenAI
+      ? "gpt-4o"
+      : hasGoogle
+        ? "gemini-2.5-flash"
+        : defaultModel;
 
   return {
     planning: planningModel,
@@ -113,26 +108,86 @@ function buildRouterConfig(defaultModel: string): RouterConfig {
 }
 
 const PLANNING_TOKENS = [
-  "plan", "architecture", "design", "how should", "what is the best way",
-  "outline", "strategy", "approach", "step by step", "breakdown", "decompose",
-  "structure", "organise", "organize", "roadmap", "what would", "how to",
+  "plan",
+  "architecture",
+  "design",
+  "how should",
+  "what is the best way",
+  "outline",
+  "strategy",
+  "approach",
+  "step by step",
+  "breakdown",
+  "decompose",
+  "structure",
+  "organise",
+  "organize",
+  "roadmap",
+  "what would",
+  "how to",
 ];
 
 const CODING_TOKENS = [
-  "write", "implement", "create", "build", "code", "function", "class",
-  "component", "edit", "modify", "refactor", "fix", "bug", "error", "patch",
-  "update", "add", "delete line", "replace", "typescript", "javascript",
-  "react", "hook", "api", "endpoint", "test", "spec",
+  "write",
+  "implement",
+  "create",
+  "build",
+  "code",
+  "function",
+  "class",
+  "component",
+  "edit",
+  "modify",
+  "refactor",
+  "fix",
+  "bug",
+  "error",
+  "patch",
+  "update",
+  "add",
+  "delete line",
+  "replace",
+  "typescript",
+  "javascript",
+  "react",
+  "hook",
+  "api",
+  "endpoint",
+  "test",
+  "spec",
 ];
 
 const SEARCH_TOKENS = [
-  "search", "find online", "look up", "google", "web", "documentation",
-  "docs for", "latest", "news", "article", "link", "url", "package info",
+  "search",
+  "find online",
+  "look up",
+  "google",
+  "web",
+  "documentation",
+  "docs for",
+  "latest",
+  "news",
+  "article",
+  "link",
+  "url",
+  "package info",
 ];
 
 const FAST_TOKENS = [
-  "what is", "show me", "list", "status", "check", "version", "run",
-  "execute", "git", "npm", "install", "ping", "health", "quick",
+  "what is",
+  "show me",
+  "list",
+  "status",
+  "check",
+  "version",
+  "run",
+  "execute",
+  "git",
+  "npm",
+  "install",
+  "ping",
+  "health",
+  "quick",
 ];
 
 export function classifyTask(prompt: string): TaskType {

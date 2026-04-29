@@ -107,7 +107,10 @@ export function setLearnConfig(opts: { enabled: boolean; threshold: number }): v
   autoApproveThreshold = opts.threshold;
 }
 
-function matchRule(toolName: string, args: Record<string, unknown> | undefined): PermissionRule | undefined {
+function matchRule(
+  toolName: string,
+  args: Record<string, unknown> | undefined,
+): PermissionRule | undefined {
   for (const rule of rules) {
     // Tool name match: exact or wildcard
     if (rule.tool !== "*" && rule.tool !== toolName) continue;
@@ -168,7 +171,10 @@ function argsFingerprint(args: Record<string, unknown>): string {
   return Object.keys(args).sort().join(",");
 }
 
-function checkLearned(toolName: string, args: Record<string, unknown> | undefined): PermissionAction | undefined {
+function checkLearned(
+  toolName: string,
+  args: Record<string, unknown> | undefined,
+): PermissionAction | undefined {
   if (!learnFromDecisions || !args) return undefined;
   const fp = argsFingerprint(args);
   const learned = learnedPermissions.find((l) => l.tool === toolName && l.argsPattern === fp);
@@ -213,7 +219,16 @@ export function getPermissionLevel(
 ): PermissionAction {
   // Plan mode: all write-level tools require asking
   if (planMode) {
-    const writeTools = ["write", "writeFile", "edit", "replaceFileContent", "multiReplaceFileContent", "bash", "runCommand", "sendTransaction"];
+    const writeTools = [
+      "write",
+      "writeFile",
+      "edit",
+      "replaceFileContent",
+      "multiReplaceFileContent",
+      "bash",
+      "runCommand",
+      "sendTransaction",
+    ];
     if (writeTools.includes(toolName)) return "ask";
   }
 
@@ -249,13 +264,50 @@ export function isReadOnlyCommand(command: string): boolean {
   if (/[;&|<>]/.test(c)) return false;
   const lowerC = c.toLowerCase();
   const cmds = [
-    "ls", "cat", "head", "tail", "grep", "find", "git log", "git diff",
-    "git status", "git branch", "git remote", "git show", "which", "pwd",
-    "echo", "type", "npm list", "node -v", "npm -v", "env", "printenv",
-    "whoami", "uname", "df", "du", "wc", "sort", "uniq", "tee", "curl -s",
-    "dig", "nslookup", "npx tsc --noEmit", "npm run", "npx vitest",
-    "npx jest", "cargo check", "cargo test", "cargo build", "go test",
-    "go build", "python -c", "python3 -c", "pip list",
+    "ls",
+    "cat",
+    "head",
+    "tail",
+    "grep",
+    "find",
+    "git log",
+    "git diff",
+    "git status",
+    "git branch",
+    "git remote",
+    "git show",
+    "which",
+    "pwd",
+    "echo",
+    "type",
+    "npm list",
+    "node -v",
+    "npm -v",
+    "env",
+    "printenv",
+    "whoami",
+    "uname",
+    "df",
+    "du",
+    "wc",
+    "sort",
+    "uniq",
+    "tee",
+    "curl -s",
+    "dig",
+    "nslookup",
+    "npx tsc --noEmit",
+    "npm run",
+    "npx vitest",
+    "npx jest",
+    "cargo check",
+    "cargo test",
+    "cargo build",
+    "go test",
+    "go build",
+    "python -c",
+    "python3 -c",
+    "pip list",
   ];
   return cmds.some((r) => lowerC === r || lowerC.startsWith(r + " "));
 }

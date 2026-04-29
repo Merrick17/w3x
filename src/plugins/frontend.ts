@@ -22,13 +22,9 @@ export const frontendTools = {
       const content = await fs.readFile(fullPath, "utf-8");
 
       const components = [
-        ...content.matchAll(
-          /function\s+(\w+)\s*\((.*?)\)|const\s+(\w+)\s*=\s*(?:\(.*?\))?\s*=>/g,
-        ),
+        ...content.matchAll(/function\s+(\w+)\s*\((.*?)\)|const\s+(\w+)\s*=\s*(?:\(.*?\))?\s*=>/g),
       ];
-      const props = [
-        ...content.matchAll(/interface\s+(\w+Props)|type\s+(\w+Props)\s*=/g),
-      ];
+      const props = [...content.matchAll(/interface\s+(\w+Props)|type\s+(\w+Props)\s*=/g)];
 
       return {
         path,
@@ -49,9 +45,7 @@ export const frontendTools = {
     inputSchema: z.object({
       command: z
         .string()
-        .describe(
-          'Command to run (e.g., "npm install @solana/kit", "npm run build")',
-        ),
+        .describe('Command to run (e.g., "npm install @solana/kit", "npm run build")'),
     }),
     execute: async ({ command }) => {
       const r = await execaCommand(command, {
@@ -71,10 +65,7 @@ export const frontendTools = {
     description: "Run ESLint/Prettier programmatically on a file or directory.",
     inputSchema: z.object({
       path: z.string().describe("Path to lint (relative to project root)"),
-      fix: z
-        .boolean()
-        .optional()
-        .describe("Whether to apply fixes automatically"),
+      fix: z.boolean().optional().describe("Whether to apply fixes automatically"),
     }),
     execute: async ({ path, fix }) => {
       // Validate the path stays within the project

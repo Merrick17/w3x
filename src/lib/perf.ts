@@ -19,7 +19,10 @@ export function perfCount(name: string, delta = 1): number {
   return next;
 }
 
-export function perfSnapshot(): { marks: Record<string, number>; counters: Record<string, number> } {
+export function perfSnapshot(): {
+  marks: Record<string, number>;
+  counters: Record<string, number>;
+} {
   return {
     marks: Object.fromEntries(marks),
     counters: Object.fromEntries(counters),

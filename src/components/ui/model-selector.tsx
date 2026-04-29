@@ -43,7 +43,7 @@ interface ModelRowProps {
 const getModelColor = (
   isSelected: boolean,
   isActive: boolean,
-  theme: ReturnType<typeof useTheme>
+  theme: ReturnType<typeof useTheme>,
 ): string => {
   if (isSelected) {
     return theme.colors.statusSuccess;
@@ -63,13 +63,8 @@ const ModelRow = ({
   theme,
 }: ModelRowProps) => (
   <Box gap={1}>
-    <Text color={isActive ? theme.colors.primary : undefined}>
-      {isActive ? "›" : " "}
-    </Text>
-    <Text
-      bold={isActive || isSelected}
-      color={getModelColor(isSelected, isActive, theme)}
-    >
+    <Text color={isActive ? theme.colors.primary : undefined}>{isActive ? "›" : " "}</Text>
+    <Text bold={isActive || isSelected} color={getModelColor(isSelected, isActive, theme)}>
       {model.name}
     </Text>
     {isSelected && <Text color={theme.colors.statusSuccess}>✓</Text>}
@@ -101,18 +96,21 @@ export const ModelSelector = ({
     return Math.max(idx, 0);
   });
 
-  useInput((input, key) => {
-    if (key.upArrow) {
-      setActiveIndex((i) => Math.max(0, i - 1));
-    } else if (key.downArrow) {
-      setActiveIndex((i) => Math.min(models.length - 1, i + 1));
-    } else if (key.return) {
-      const m = models[activeIndex];
-      if (m) {
-        onSelect?.(m.id);
+  useInput(
+    (input, key) => {
+      if (key.upArrow) {
+        setActiveIndex((i) => Math.max(0, i - 1));
+      } else if (key.downArrow) {
+        setActiveIndex((i) => Math.min(models.length - 1, i + 1));
+      } else if (key.return) {
+        const m = models[activeIndex];
+        if (m) {
+          onSelect?.(m.id);
+        }
       }
-    }
-  }, { isActive });
+    },
+    { isActive },
+  );
 
   if (groupByProvider) {
     const providerGroups: Record<string, ModelOption[]> = {
@@ -155,7 +153,12 @@ export const ModelSelector = ({
   }
 
   return (
-    <Box flexDirection="column" borderStyle="round" borderColor={theme.colors.panelBorderActive} paddingX={1}>
+    <Box
+      flexDirection="column"
+      borderStyle="round"
+      borderColor={theme.colors.panelBorderActive}
+      paddingX={1}
+    >
       {models.map((model, idx) => {
         const isActive = idx === activeIndex;
         const isSelected = model.id === selected;

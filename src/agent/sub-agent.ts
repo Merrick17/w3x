@@ -122,17 +122,20 @@ export class SubAgent {
 export const SUB_AGENT_TYPES = {
   general: {
     name: "general",
-    description: "General-purpose sub-agent for complex searches, codebase exploration, and multistep research tasks. Used for understanding codebases, finding relevant files, and gathering context.",
+    description:
+      "General-purpose sub-agent for complex searches, codebase exploration, and multistep research tasks. Used for understanding codebases, finding relevant files, and gathering context.",
     maxSteps: 20,
   },
   explorer: {
     name: "explorer",
-    description: "Specialized sub-agent for codebase exploration and file discovery. Excels at finding relevant code, understanding project structure, and tracing dependencies.",
+    description:
+      "Specialized sub-agent for codebase exploration and file discovery. Excels at finding relevant code, understanding project structure, and tracing dependencies.",
     maxSteps: 15,
   },
   reviewer: {
     name: "reviewer",
-    description: "Specialized sub-agent for code review. Analyzes diffs, checks for issues, and provides structured feedback on code changes.",
+    description:
+      "Specialized sub-agent for code review. Analyzes diffs, checks for issues, and provides structured feedback on code changes.",
     maxSteps: 10,
   },
 } as const;

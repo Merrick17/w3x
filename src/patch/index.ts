@@ -17,13 +17,7 @@ export function generateDiff(
   originalContent: string,
   modifiedContent: string,
 ): string {
-  return createPatch(
-    filePath,
-    originalContent,
-    modifiedContent,
-    "original",
-    "modified",
-  );
+  return createPatch(filePath, originalContent, modifiedContent, "original", "modified");
 }
 
 /**
@@ -31,10 +25,7 @@ export function generateDiff(
  * Backs up the original file before patching.
  * Follows the OpenCode pattern of diff-based editing for safety.
  */
-export async function applyPatchToFile(
-  filePath: string,
-  patchText: string,
-): Promise<PatchResult> {
+export async function applyPatchToFile(filePath: string, patchText: string): Promise<PatchResult> {
   const safePath = safeResolve(filePath);
 
   let original: string;

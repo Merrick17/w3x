@@ -19,9 +19,14 @@ export const cronTools = {
     inputSchema: z.object({
       cron: z
         .string()
-        .describe("5-field cron expression (e.g., '*/5 * * * *' = every 5 min, '0 9 * * 1-5' = weekdays 9am)"),
+        .describe(
+          "5-field cron expression (e.g., '*/5 * * * *' = every 5 min, '0 9 * * 1-5' = weekdays 9am)",
+        ),
       prompt: z.string().describe("The prompt to execute at each fire time"),
-      recurring: z.boolean().default(true).describe("Repeat on schedule (true) or fire once (false)"),
+      recurring: z
+        .boolean()
+        .default(true)
+        .describe("Repeat on schedule (true) or fire once (false)"),
     }),
     execute: async ({
       cron,

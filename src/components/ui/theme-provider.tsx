@@ -97,9 +97,7 @@ const detectUnicodeSupport = (): boolean => {
   }
 
   const platform =
-    typeof process !== "undefined" && process.platform
-      ? process.platform
-      : "browser";
+    typeof process !== "undefined" && process.platform ? process.platform : "browser";
 
   if (getEnv("WSL_DISTRO_NAME")) {
     return true;
@@ -130,11 +128,9 @@ export const UnicodeContext = React.createContext<UnicodeContextValue>({
   unicode: !isNoUnicode(),
 });
 
-export const useMotion = (): MotionContextValue =>
-  React.useContext(MotionContext);
+export const useMotion = (): MotionContextValue => React.useContext(MotionContext);
 
-export const useUnicode = (): boolean =>
-  React.useContext(UnicodeContext).unicode;
+export const useUnicode = (): boolean => React.useContext(UnicodeContext).unicode;
 
 interface ThemeContextValue {
   setTheme: (theme: Theme) => void;
@@ -196,42 +192,34 @@ export const ThemeProvider = ({
 
   const motionValue = React.useMemo(
     () => ({ reduced: reducedMotion ?? isReducedMotion() }),
-    [reducedMotion]
+    [reducedMotion],
   );
 
   const unicodeValue = React.useMemo(
     () => ({
       unicode: noUnicode === undefined ? !isNoUnicode() : !noUnicode,
     }),
-    [noUnicode]
+    [noUnicode],
   );
 
   const themeValue = React.useMemo(
     () => ({ setTheme: setCurrentTheme, theme: currentTheme }),
-    [currentTheme]
+    [currentTheme],
   );
 
   return (
     <MotionContext.Provider value={motionValue}>
       <UnicodeContext.Provider value={unicodeValue}>
-        <ThemeContext.Provider value={themeValue}>
-          {children}
-        </ThemeContext.Provider>
+        <ThemeContext.Provider value={themeValue}>{children}</ThemeContext.Provider>
       </UnicodeContext.Provider>
     </MotionContext.Provider>
   );
 };
 
-export const AutoThemeProvider = ({
-  children,
-  darkTheme,
-  lightTheme,
-}: AutoThemeProviderProps) => {
+export const AutoThemeProvider = ({ children, darkTheme, lightTheme }: AutoThemeProviderProps) => {
   const scheme = detectColorScheme();
   return (
-    <ThemeProvider theme={scheme === "dark" ? darkTheme : lightTheme}>
-      {children}
-    </ThemeProvider>
+    <ThemeProvider theme={scheme === "dark" ? darkTheme : lightTheme}>{children}</ThemeProvider>
   );
 };
 
@@ -240,9 +228,7 @@ export const useTheme = (): Theme => React.useContext(ThemeContext).theme;
 export const useThemeUpdater = (): ((theme: Theme) => void) =>
   React.useContext(ThemeContext).setTheme;
 
-export const createTheme = (
-  overrides: Partial<Theme> & { name: string }
-): Theme => ({
+export const createTheme = (overrides: Partial<Theme> & { name: string }): Theme => ({
   ...defaultTheme,
   ...overrides,
   border: {
