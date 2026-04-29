@@ -43,7 +43,7 @@ export const editTools = {
     }),
     execute: async ({ path, replacements }: { path: string; replacements: Array<{ startLine: number; endLine: number; content: string }> }) => {
       const p = safeResolve(path, ws());
-      let fileContent = await fs.readFile(p, "utf-8");
+      const fileContent = await fs.readFile(p, "utf-8");
       let lines = fileContent.split("\n");
       const sorted = [...replacements].sort((a, b) => b.startLine - a.startLine);
       for (const r of sorted) {

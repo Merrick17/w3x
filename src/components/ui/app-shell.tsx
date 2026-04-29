@@ -39,11 +39,20 @@ export interface AppShellHintsProps {
   children?: ReactNode;
 }
 
-const AppShellRoot = ({ children }: AppShellProps) => (
-  <Box flexDirection="column" flexGrow={1}>
-    {children}
-  </Box>
-);
+const AppShellRoot = ({ children }: AppShellProps) => {
+  const theme = useTheme();
+  return (
+    <Box
+      flexDirection="column"
+      flexGrow={1}
+      borderStyle="round"
+      borderColor={theme.colors.panelBorder}
+      paddingX={1}
+    >
+      {children}
+    </Box>
+  );
+};
 
 const AppShellHeader = ({ children }: AppShellHeaderProps) => (
   <Box flexDirection="column">{children}</Box>

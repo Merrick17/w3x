@@ -99,7 +99,7 @@ export class FileWatcher extends EventEmitter {
   }
 
   /** Get recently changed files (last N minutes) */
-  getRecentChanges(minutes = 5): FileChange[] {
+  getRecentChanges(_minutes = 5): FileChange[] {
     // This is primarily emitter-based; recent changes are tracked via events
     return [];
   }

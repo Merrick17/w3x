@@ -16,6 +16,7 @@ export interface Command {
 export interface CommandPaletteProps {
   commands: Command[];
   isOpen: boolean;
+  isActive?: boolean;
   onClose?: () => void;
   placeholder?: string;
   maxItems?: number;
@@ -66,6 +67,7 @@ const fuzzyScore = (str: string, query: string): number => {
 export const CommandPalette = ({
   commands,
   isOpen,
+  isActive = true,
   onClose,
   placeholder = "Type a command...",
   maxItems = 8,
@@ -124,7 +126,7 @@ export const CommandPalette = ({
 
     setQuery((q) => q + input);
     setCursor(0);
-  });
+  }, { isActive: isOpen && isActive });
 
   if (!isOpen) {
     return null;
@@ -145,10 +147,10 @@ export const CommandPalette = ({
     <Box
       flexDirection="column"
       borderStyle="round"
-      borderColor={theme.colors.focusRing}
+      borderColor={theme.colors.panelBorderActive}
       paddingX={1}
     >
-      <Box borderStyle="single" borderColor={theme.colors.border} paddingX={1}>
+      <Box borderStyle="single" borderColor={theme.colors.panelBorder} paddingX={1}>
         <Text color={theme.colors.mutedForeground}>⌘ </Text>
         <Text
           color={query ? theme.colors.foreground : theme.colors.mutedForeground}

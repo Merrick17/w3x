@@ -168,6 +168,15 @@ export const fileTools = {
       const limited = files.slice(0, maxFiles);
       const treeLines: string[] = [];
       const pathSet = new Set<string>();
+      const dirGuess = new Set<string>();
+      for (const f of limited) {
+        const parts = f.split(/[/\\]/);
+        let current = "";
+        for (let i = 0; i < parts.length - 1; i++) {
+          current = current ? `${current}/${parts[i]}` : parts[i];
+          dirGuess.add(current);
+        }
+      }
       for (const f of limited) {
         const parts = f.split(/[/\\]/);
         let currentPath = "";
@@ -177,13 +186,7 @@ export const fileTools = {
           if (!pathSet.has(currentPath)) {
             pathSet.add(currentPath);
             const indent = "  ".repeat(i);
-            let isDir = false;
-            try {
-              const stats = await fs.stat(resolve(p, currentPath));
-              isDir = stats.isDirectory();
-            } catch {
-              isDir = i < parts.length - 1;
-            }
+            const isDir = dirGuess.has(currentPath) || i < parts.length - 1;
             treeLines.push(`${indent}${isDir ? "📁 " : "📄 "}${name}`);
           }
         }

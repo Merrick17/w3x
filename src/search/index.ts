@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 import { cwd } from "node:process";
 import fg from "fast-glob";
 import { embed, embedMany } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 import { safeResolve } from "../file/path-utils";
 
 const INDEX_FILE = ".w3x/search-index.json";
@@ -20,6 +22,26 @@ interface SearchIndex {
   embeddings: number[][];
   indexedAt: number;
   fileCount: number;
+}
+
+let indexCache: { index: SearchIndex; mtimeMs: number } | null = null;
+
+function selectTopK<T>(items: T[], k: number, score: (item: T) => number): T[] {
+  if (k <= 0) return [];
+  const top: T[] = [];
+  for (const item of items) {
+    const itemScore = score(item);
+    if (top.length < k) {
+      top.push(item);
+      top.sort((a, b) => score(a) - score(b));
+      continue;
+    }
+    if (itemScore > score(top[0])) {
+      top[0] = item;
+      top.sort((a, b) => score(a) - score(b));
+    }
+  }
+  return top.sort((a, b) => score(b) - score(a));
 }
 
 /** Simple hash for change detection */
@@ -114,14 +136,22 @@ async function scanCodebase(root: string): Promise<CodeChunk[]> {
   const maxFiles = 200;
   const selectedFiles = files.slice(0, maxFiles);
 
-  for (const file of selectedFiles) {
-    try {
-      const content = await fs.readFile(resolve(root, file), "utf-8");
-      if (content.length < 10000) {
-        allChunks.push(...chunkFile(file, content));
+  const concurrency = 16;
+  for (let i = 0; i < selectedFiles.length; i += concurrency) {
+    const batch = selectedFiles.slice(i, i + concurrency);
+    const settled = await Promise.allSettled(
+      batch.map(async (file) => {
+        const content = await fs.readFile(resolve(root, file), "utf-8");
+        if (content.length < 10000) {
+          return chunkFile(file, content);
+        }
+        return [] as CodeChunk[];
+      }),
+    );
+    for (const result of settled) {
+      if (result.status === "fulfilled") {
+        allChunks.push(...result.value);
       }
-    } catch {
-      // skip unreadable files
     }
   }
 
@@ -131,14 +161,17 @@ async function scanCodebase(root: string): Promise<CodeChunk[]> {
 /**
  * Get an embedding model. Tries OpenAI first, then Google, falls back gracefully.
  */
-function getEmbeddingModel(): any {
+let embeddingModelCache: ReturnType<typeof openai.embedding> | ReturnType<typeof google.textEmbeddingModel> | null = null;
+
+function getEmbeddingModel() {
+  if (embeddingModelCache) return embeddingModelCache;
   if (process.env.OPENAI_API_KEY) {
-    const { openai } = require("@ai-sdk/openai");
-    return openai.embedding("text-embedding-3-small");
+    embeddingModelCache = openai.embedding("text-embedding-3-small");
+    return embeddingModelCache;
   }
   if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    const { google } = require("@ai-sdk/google");
-    return google.textEmbeddingModel("text-embedding-004");
+    embeddingModelCache = google.textEmbeddingModel("text-embedding-004");
+    return embeddingModelCache;
   }
   return null;
 }
@@ -154,6 +187,7 @@ export async function buildSearchIndex(): Promise<{
   files: number;
   message: string;
 }> {
+  const buildStart = Date.now();
   const root = cwd();
   const chunks = await scanCodebase(root);
 
@@ -163,17 +197,45 @@ export async function buildSearchIndex(): Promise<{
 
   const embeddingModel = getEmbeddingModel();
   let embeddings: number[][] = [];
+  let previous: SearchIndex | null = null;
+  try {
+    const prevRaw = await fs.readFile(safeResolve(INDEX_FILE), "utf-8");
+    previous = JSON.parse(prevRaw) as SearchIndex;
+  } catch {
+    previous = null;
+  }
+  const previousByHash = new Map<string, number[]>();
+  if (previous) {
+    previous.chunks.forEach((chunk, i) => {
+      const emb = previous?.embeddings[i];
+      if (emb) previousByHash.set(chunk.hash, emb);
+    });
+  }
 
   if (embeddingModel) {
     try {
-      const contents = chunks.map((c) => c.content.slice(0, 2000));
-      const result = await embedMany({
-        model: embeddingModel,
-        values: contents,
+      embeddings = new Array(chunks.length);
+      const missing: Array<{ idx: number; value: string }> = [];
+      chunks.forEach((chunk, idx) => {
+        const cached = previousByHash.get(chunk.hash);
+        if (cached) {
+          embeddings[idx] = cached;
+        } else {
+          missing.push({ idx, value: chunk.content.slice(0, 2000) });
+        }
       });
-      embeddings = result.embeddings;
+      if (missing.length > 0) {
+        const result = await embedMany({
+          model: embeddingModel,
+          values: missing.map((m) => m.value),
+        });
+        missing.forEach((m, i) => {
+          embeddings[m.idx] = result.embeddings[i];
+        });
+      }
     } catch {
       // fallback to no embeddings
+      embeddings = [];
     }
   }
 
@@ -187,6 +249,8 @@ export async function buildSearchIndex(): Promise<{
   const indexPath = safeResolve(INDEX_FILE);
   await fs.mkdir(resolve(indexPath, ".."), { recursive: true });
   await fs.writeFile(indexPath, JSON.stringify(index), "utf-8");
+  const stats = await fs.stat(indexPath);
+  indexCache = { index, mtimeMs: stats.mtimeMs };
 
   return {
     success: true,
@@ -194,8 +258,8 @@ export async function buildSearchIndex(): Promise<{
     chunks: chunks.length,
     files: index.fileCount,
     message: embeddings.length > 0
-      ? `Indexed ${chunks.length} chunks across ${index.fileCount} files with embeddings`
-      : `Indexed ${chunks.length} chunks across ${index.fileCount} files (keyword-only, no embedding API key configured)`,
+      ? `Indexed ${chunks.length} chunks across ${index.fileCount} files with embeddings in ${Date.now() - buildStart}ms`
+      : `Indexed ${chunks.length} chunks across ${index.fileCount} files (keyword-only, no embedding API key configured) in ${Date.now() - buildStart}ms`,
   };
 }
 
@@ -226,12 +290,19 @@ export async function semanticSearch(
   embedded: boolean;
   query: string;
 }> {
+  const searchStart = Date.now();
   const indexPath = safeResolve(INDEX_FILE);
 
   let index: SearchIndex;
   try {
-    const raw = await fs.readFile(indexPath, "utf-8");
-    index = JSON.parse(raw) as SearchIndex;
+    const stat = await fs.stat(indexPath);
+    if (indexCache && indexCache.mtimeMs === stat.mtimeMs) {
+      index = indexCache.index;
+    } else {
+      const raw = await fs.readFile(indexPath, "utf-8");
+      index = JSON.parse(raw) as SearchIndex;
+      indexCache = { index, mtimeMs: stat.mtimeMs };
+    }
   } catch {
     return { results: [], embedded: false, query };
   }
@@ -253,10 +324,9 @@ export async function semanticSearch(
         ...chunk,
         score: cosineSimilarity(queryEmbedding, index.embeddings[i]),
       }));
+      const top = selectTopK(scored, topK * 3, (s) => s.score).filter((s) => s.score > 0.3).slice(0, topK);
 
-      scored.sort((a, b) => b.score - a.score);
-      const top = scored.slice(0, topK).filter((s) => s.score > 0.3);
-
+      void searchStart;
       return {
         results: top.map((s) => ({
           file: s.file,
@@ -304,8 +374,7 @@ function keywordSearch(
     return { ...chunk, score };
   });
 
-  scored.sort((a, b) => b.score - a.score);
-  const top = scored.slice(0, topK).filter((s) => s.score > 0);
+  const top = selectTopK(scored, topK * 3, (s) => s.score).filter((s) => s.score > 0).slice(0, topK);
 
   return {
     results: top.map((s) => ({

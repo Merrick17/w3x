@@ -15,6 +15,7 @@ export interface ModelSelectorProps {
   models: ModelOption[];
   selected: string;
   onSelect?: (id: string) => void;
+  isActive?: boolean;
   showContext?: boolean;
   showProvider?: boolean;
   groupByProvider?: boolean;
@@ -45,7 +46,7 @@ const getModelColor = (
   theme: ReturnType<typeof useTheme>
 ): string => {
   if (isSelected) {
-    return theme.colors.success ?? "green";
+    return theme.colors.statusSuccess;
   }
   if (isActive) {
     return theme.colors.primary;
@@ -71,7 +72,7 @@ const ModelRow = ({
     >
       {model.name}
     </Text>
-    {isSelected && <Text color={theme.colors.success ?? "green"}>✓</Text>}
+    {isSelected && <Text color={theme.colors.statusSuccess}>✓</Text>}
     {showProvider && (
       <Text dimColor color={theme.colors.mutedForeground}>
         {model.provider}
@@ -89,6 +90,7 @@ export const ModelSelector = ({
   models,
   selected,
   onSelect,
+  isActive = true,
   showContext = true,
   showProvider = true,
   groupByProvider = false,
@@ -110,7 +112,7 @@ export const ModelSelector = ({
         onSelect?.(m.id);
       }
     }
-  });
+  }, { isActive });
 
   if (groupByProvider) {
     const providerGroups: Record<string, ModelOption[]> = {
@@ -153,7 +155,7 @@ export const ModelSelector = ({
   }
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" borderStyle="round" borderColor={theme.colors.panelBorderActive} paddingX={1}>
       {models.map((model, idx) => {
         const isActive = idx === activeIndex;
         const isSelected = model.id === selected;

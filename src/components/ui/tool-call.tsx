@@ -1,5 +1,5 @@
 import { Box, Text } from "ink";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 
 import { useTheme } from "@/components/ui/theme-provider";
 import { useAnimation } from "@/hooks/use-animation";
@@ -29,24 +29,13 @@ export const ToolCall = ({
   focused = false,
 }: ToolCallProps) => {
   const theme = useTheme();
-  const [collapsed, setCollapsed] = useState(defaultCollapsed);
-  const [elapsed, setElapsed] = useState(0);
-  const startRef = useRef(Date.now());
+  const initialCollapsed =
+    defaultCollapsed && status !== "running" && status !== "error";
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
   const frame = useAnimation(12);
 
   const spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
   const spinnerIcon = spinnerFrames[frame % spinnerFrames.length] ?? "⠋";
-
-  useEffect(() => {
-    if (status !== "running") {
-      return;
-    }
-    startRef.current = Date.now();
-    const id = setInterval(() => {
-      setElapsed(Date.now() - startRef.current);
-    }, 100);
-    return () => clearInterval(id);
-  }, [status]);
 
   useInput((input, key) => {
     if (collapsible && (key.return || input === " ")) {
@@ -76,16 +65,16 @@ export const ToolCall = ({
 
   let durationText: string | null;
   if (duration === undefined) {
-    durationText = status === "running" ? `${elapsed}ms` : null;
+    durationText = status === "running" ? "running..." : null;
   } else {
     durationText = `${duration}ms`;
   }
 
   let nameColor: string;
   if (status === "error") {
-    nameColor = theme.colors.error ?? "red";
+    nameColor = theme.colors.statusError;
   } else if (status === "success") {
-    nameColor = theme.colors.success ?? "green";
+    nameColor = theme.colors.statusSuccess;
   } else if (status === "running") {
     nameColor = theme.colors.primary;
   } else {

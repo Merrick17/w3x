@@ -20,8 +20,9 @@ export const DEFAULT_KEYBINDINGS: KeybindingMap = {
   toggleLogs: { key: "l", ctrl: true },
   showHelp: { key: "h", ctrl: true },
   modelSelector: { key: "m", ctrl: true },
+  cancel: { key: "c", ctrl: true },
   exit: { key: "x", ctrl: true },
-  exitAlt: { key: "c", ctrl: true },
+  completeSlash: { key: "\t" },
 };
 
 let customBindings: KeybindingMap | null = null;
@@ -53,10 +54,23 @@ export function matchKeybinding(
 ): boolean {
   const binding = getKeybindings()[action];
   if (!binding) return false;
+  const normalized = ch === "" && binding.key === "\t";
   return (
-    binding.key === ch &&
+    (binding.key === ch || normalized) &&
     (binding.ctrl ?? false) === key.ctrl &&
     (binding.meta ?? false) === key.meta &&
     (binding.shift ?? false) === key.shift
   );
+}
+
+export function formatKeybinding(action: string): string {
+  const binding = getKeybindings()[action];
+  if (!binding) return "";
+  const parts: string[] = [];
+  if (binding.ctrl) parts.push("Ctrl");
+  if (binding.meta) parts.push("Meta");
+  if (binding.shift) parts.push("Shift");
+  const key = binding.key === "\t" ? "Tab" : binding.key.toUpperCase();
+  parts.push(key);
+  return parts.join("+");
 }

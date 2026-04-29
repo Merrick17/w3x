@@ -50,7 +50,7 @@ export const ChatMessage = ({
     if (initialCollapsed && (key.return || input === " ")) {
       setIsCollapsed((c) => !c);
     }
-  });
+  }, { isActive: initialCollapsed });
 
   const roleColor: Record<ChatRole, string> = {
     assistant: theme.colors.success ?? "green",

@@ -1,4 +1,4 @@
-type EventHandler = (...args: any[]) => void;
+type EventHandler = (...args: unknown[]) => void;
 
 export class EventBus {
   private handlers = new Map<string, Set<EventHandler>>();
@@ -13,7 +13,7 @@ export class EventBus {
     this.handlers.get(event)?.delete(handler);
   }
 
-  emit(event: string, ...args: any[]): void {
+  emit(event: string, ...args: unknown[]): void {
     this.handlers.get(event)?.forEach((h) => {
       try { h(...args); } catch { /* silently ignore */ }
     });

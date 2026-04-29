@@ -13,8 +13,17 @@ type AnyTool = any;
 export class ToolRegistry {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static pluginTools: Record<string, any> = {};
+  private static wrappedCache: AnyTool | null = null;
+  private static cacheVersion = 0;
+  private static lastBuiltVersion = -1;
+
+  static invalidateCache(): void {
+    this.cacheVersion += 1;
+    this.wrappedCache = null;
+  }
 
   static async loadPlugins() {
+    this.pluginTools = {};
     const pluginsDir = resolve(cwd(), "src/plugins");
     try {
       const files = await readdir(pluginsDir);
@@ -38,6 +47,7 @@ export class ToolRegistry {
         logger.warn("tool-registry", `Error reading plugins directory: ${logger.fromError("plugins", e)}`);
       }
     }
+    this.invalidateCache();
   }
 
   private static wrapWithTruncation(tool: AnyTool, toolName: string): AnyTool {
@@ -67,11 +77,16 @@ export class ToolRegistry {
   }
 
   static getTools(): AnyTool {
+    if (this.wrappedCache && this.lastBuiltVersion === this.cacheVersion) {
+      return this.wrappedCache;
+    }
     const allTools = { ...coreTools, ...this.pluginTools, ...getMcpClient().getTools() };
     const wrapped: Record<string, AnyTool> = {};
     for (const [name, tool] of Object.entries(allTools)) {
       wrapped[name] = this.wrapWithTruncation(tool, name);
     }
+    this.wrappedCache = wrapped;
+    this.lastBuiltVersion = this.cacheVersion;
     return wrapped;
   }
 }

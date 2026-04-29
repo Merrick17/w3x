@@ -20,12 +20,10 @@ export class Executor {
    * Emits plan-step-start / plan-step-done around each step.
    */
   async *execute(plan: Plan, systemBase: string): AsyncGenerator<CLIEvent> {
-    const completedSteps: string[] = [];
-
     for (const step of plan.steps) {
       yield { type: 'plan-step-start', step: { ...step, status: 'running' } };
 
-      const stepPrompt = this.buildStepPrompt(step, plan, completedSteps);
+      const stepPrompt = this.buildStepPrompt(step, plan);
       let success = true;
 
       try {
@@ -46,7 +44,8 @@ export class Executor {
               yield { type: 'thinking', content: event.text };
               break;
             case 'tool-call': {
-              const input = (event as any).input ?? (event as any).args ?? {};
+              const streamEvent = event as { input?: unknown; args?: unknown };
+              const input = streamEvent.input ?? streamEvent.args ?? {};
               const toolArgs = typeof input === 'object' && input !== null
                 ? input as Record<string, unknown>
                 : {};
@@ -64,8 +63,8 @@ export class Executor {
             }
             case 'error': {
               success = false;
-              const msg = typeof event.error === 'object' && event.error && 'message' in (event.error as any)
-                ? String((event.error as any).message).slice(0, 200)
+              const msg = typeof event.error === 'object' && event.error && 'message' in event.error
+                ? String((event.error as { message?: unknown }).message).slice(0, 200)
                 : String(event.error).slice(0, 200);
               yield { type: 'error', message: msg };
               break;
@@ -73,7 +72,6 @@ export class Executor {
           }
         }
 
-        completedSteps.push(step.id);
       } catch (err) {
         success = false;
         const msg = (err instanceof Error ? err.message : String(err)).slice(0, 200);
@@ -90,7 +88,7 @@ export class Executor {
     }
   }
 
-  private buildStepPrompt(step: PlanStep, plan: Plan, completed: string[]): string {
+  private buildStepPrompt(step: PlanStep, plan: Plan): string {
     const hints = step.toolHints.length > 0
       ? `\nSuggested tools: ${step.toolHints.join(', ')}`
       : '';

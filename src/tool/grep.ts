@@ -1,7 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod/v4";
-import fg from "fast-glob";
-import { readFileSync, existsSync } from "node:fs";
+import { execaCommand } from "execa";
 import { resolve } from "node:path";
 import { cwd } from "node:process";
 
@@ -10,35 +9,22 @@ async function searchInFiles(
   searchPath: string,
   fileGlob: string,
 ): Promise<Array<{ file: string; line: number; content: string }>> {
-  const regex = new RegExp(pattern, "gi");
-  const files = await fg(fileGlob, {
-    cwd: searchPath,
-    ignore: ["node_modules/**", ".git/**", "dist/**", ".w3x/**", "build/**", "target/**"],
-    absolute: true,
-    dot: false,
+  const cmd = `rg --line-number --no-heading --glob "${fileGlob}" "${pattern.replace(/"/g, '\\"')}" "${searchPath}"`;
+  const result = await execaCommand(cmd, {
+    shell: process.platform === "win32" ? "powershell" : true,
+    reject: false,
+    timeout: 20000,
   });
-
   const results: Array<{ file: string; line: number; content: string }> = [];
-  for (const file of files.slice(0, 1000)) {
-    try {
-      if (!existsSync(file)) continue;
-      const content = readFileSync(file, "utf-8");
-      const lines = content.split("\n");
-      for (let i = 0; i < lines.length; i++) {
-        if (regex.test(lines[i])) {
-          regex.lastIndex = 0;
-          results.push({
-            file: file.replace(searchPath, "").replace(/^[/\\]/, ""),
-            line: i + 1,
-            content: lines[i].trim().slice(0, 200),
-          });
-          if (results.length >= 250) break;
-        }
-      }
-    } catch {
-      // skip unreadable files
-    }
-    if (results.length >= 250) break;
+  const lines = (result.stdout ?? "").split("\n").filter(Boolean);
+  for (const line of lines.slice(0, 250)) {
+    const m = line.match(/^(.*?):(\d+):(.*)$/);
+    if (!m) continue;
+    results.push({
+      file: m[1].replace(searchPath, "").replace(/^[/\\]/, ""),
+      line: Number(m[2]),
+      content: m[3].trim().slice(0, 200),
+    });
   }
 
   return results;

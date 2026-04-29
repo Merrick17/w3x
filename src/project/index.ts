@@ -64,8 +64,13 @@ export async function detectProject(): Promise<ProjectInfo> {
   return info;
 }
 
-function detectLanguageFromPackage(pkg: any): string {
-  const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+interface PackageLike {
+  dependencies?: Record<string, unknown>;
+  devDependencies?: Record<string, unknown>;
+}
+
+function detectLanguageFromPackage(pkg: PackageLike): string {
+  const deps = { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) };
   if (deps && "typescript" in deps) return "typescript";
   if (deps && "react" in deps) return "javascript";
   return "javascript";

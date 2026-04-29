@@ -34,6 +34,15 @@ export interface ColorTokens {
   focusRing: string;
   selection: string;
   selectionForeground: string;
+  surface0: string;
+  surface1: string;
+  surface2: string;
+  panelBorder: string;
+  panelBorderActive: string;
+  statusSuccess: string;
+  statusWarning: string;
+  statusError: string;
+  statusInfo: string;
 }
 
 export interface SpacingTokens {

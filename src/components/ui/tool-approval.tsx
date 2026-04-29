@@ -11,6 +11,7 @@ export interface ToolApprovalProps {
   description?: string;
   args?: Record<string, unknown>;
   risk?: RiskLevel;
+  isActive?: boolean;
   onApprove?: () => void;
   onDeny?: () => void;
   onAlwaysAllow?: () => void;
@@ -22,6 +23,7 @@ export const ToolApproval = ({
   description,
   args,
   risk = "low",
+  isActive = true,
   onApprove,
   onDeny,
   onAlwaysAllow,
@@ -61,12 +63,12 @@ export const ToolApproval = ({
     } else if ((input === "a" || input === "A") && onAlwaysAllow) {
       onAlwaysAllow();
     }
-  });
+  }, { isActive });
 
   const riskBorderColor: Record<RiskLevel, string> = {
-    high: theme.colors.error ?? "red",
-    low: theme.colors.success ?? "green",
-    medium: theme.colors.warning ?? "yellow",
+    high: theme.colors.statusError,
+    low: theme.colors.statusSuccess,
+    medium: theme.colors.statusWarning,
   };
 
   const riskLabel: Record<RiskLevel, string> = {
@@ -76,9 +78,9 @@ export const ToolApproval = ({
   };
 
   const riskLabelColor: Record<RiskLevel, string> = {
-    high: theme.colors.error ?? "red",
-    low: theme.colors.success ?? "green",
-    medium: theme.colors.warning ?? "yellow",
+    high: theme.colors.statusError,
+    low: theme.colors.statusSuccess,
+    medium: theme.colors.statusWarning,
   };
 
   const borderColor = riskBorderColor[risk];
@@ -99,7 +101,7 @@ export const ToolApproval = ({
           [{riskLabel[risk]} RISK]
         </Text>
         {timeout && remaining > 0 && (
-          <Text color={theme.colors.warning ?? "yellow"} dimColor>
+          <Text color={theme.colors.statusWarning} dimColor>
             Auto-deny in {remaining}s
           </Text>
         )}
@@ -135,14 +137,14 @@ export const ToolApproval = ({
       )}
 
       <Box gap={2} marginTop={1}>
-        <Text color={theme.colors.success ?? "green"} bold>
+        <Text color={theme.colors.statusSuccess} bold>
           [y] Approve
         </Text>
-        <Text color={theme.colors.error ?? "red"} bold>
+        <Text color={theme.colors.statusError} bold>
           [n] Deny
         </Text>
         {onAlwaysAllow && (
-          <Text color={theme.colors.warning ?? "yellow"} bold>
+          <Text color={theme.colors.statusWarning} bold>
             [a] Always Allow
           </Text>
         )}

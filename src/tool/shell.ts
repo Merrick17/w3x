@@ -5,6 +5,11 @@ import { cwd } from "node:process";
 
 const DANGEROUS = ["rm -rf /", "format", "mkfs", ":(){ :|:& };:", "shutdown", "reboot"];
 const WS = cwd();
+let ACTIVE_ABORT_SIGNAL: AbortSignal | undefined;
+
+export function setShellAbortSignal(signal?: AbortSignal): void {
+  ACTIVE_ABORT_SIGNAL = signal;
+}
 
 async function executeShellCommand(command: string, timeout?: number, run_in_background?: boolean) {
   for (const d of DANGEROUS) {
@@ -21,6 +26,8 @@ async function executeShellCommand(command: string, timeout?: number, run_in_bac
       reject: false,
       detached: process.platform !== "win32",
     });
+    const abortListener = () => child.kill("SIGTERM", { forceKillAfterTimeout: 1000 });
+    ACTIVE_ABORT_SIGNAL?.addEventListener("abort", abortListener, { once: true });
     // Don't await — fire and forget. Return immediately with PID.
     return {
       success: true,
@@ -30,12 +37,16 @@ async function executeShellCommand(command: string, timeout?: number, run_in_bac
     };
   }
 
-  const r = await execaCommand(command, {
+  const child = execaCommand(command, {
     cwd: WS,
     shell: isWindows ? "powershell" : true,
     timeout: timeout || 30000,
     reject: false,
   });
+  const abortListener = () => child.kill("SIGTERM", { forceKillAfterTimeout: 1000 });
+  ACTIVE_ABORT_SIGNAL?.addEventListener("abort", abortListener);
+  const r = await child;
+  ACTIVE_ABORT_SIGNAL?.removeEventListener("abort", abortListener);
 
   return {
     success: r.exitCode === 0,

@@ -28,6 +28,11 @@ import {
   writeFile as fsWriteFile,
 } from "node:fs/promises";
 import { PINNED_FILES } from "../tool/index";
+import { perfMark, perfMeasure, perfCount, perfSnapshot } from "../lib/perf";
+import { setShellAbortSignal } from "../tool/shell";
+
+type StreamToolEvent = { input?: unknown; args?: unknown };
+type StreamErrorEvent = { error?: unknown };
 
 // ─── State → Phase mapping ─────────────────────────────────────────────
 function stateToPhase(s: AgentState): AgentPhase {
@@ -120,6 +125,7 @@ export class BuildAgent extends EventEmitter {
   // Per-call command context (set by command handlers)
   private commandSuffix = "";
   private commandTaskType: TaskType = "general";
+  private runAbortController: AbortController | null = null;
 
   constructor(llm: LlmProvider, opts: AgentLoopOpts = {}) {
     super();
@@ -161,6 +167,11 @@ export class BuildAgent extends EventEmitter {
   }
   onApprovalDecision(d: "approve" | "reject"): void {
     this.approvalResolve?.(d);
+    this.approvalResolve = null;
+  }
+  cancelCurrentRun(): void {
+    this.runAbortController?.abort();
+    this.approvalResolve?.("reject");
     this.approvalResolve = null;
   }
 
@@ -207,13 +218,17 @@ export class BuildAgent extends EventEmitter {
   // ─── Lifecycle ─────────────────────────────────────────────────────────────
   async start(): Promise<void> {
     if (this.running) return;
+    perfMark("agent.start.begin");
     this.running = true;
     this.setState("monitoring");
-    this.instructions = await loadInstructions();
-    await this.loadState();
-    await loadLearnedPermissions();
-    await ToolRegistry.loadPlugins();
-    await fireHooks("on-start");
+    const [instructions] = await Promise.all([
+      loadInstructions(),
+      this.loadState(),
+      loadLearnedPermissions(),
+      ToolRegistry.loadPlugins(),
+    ]);
+    this.instructions = instructions;
+    await fireHooks("on-start", {}, { blocking: false });
 
     const instBlock = formatInstructionsBlock(this.instructions);
     if (instBlock) {
@@ -224,6 +239,21 @@ export class BuildAgent extends EventEmitter {
       });
     }
 
+    void this.runDeferredInit();
+    const startMs = perfMeasure("agent.start.total_ms", "agent.start.begin");
+    this.emit("event", {
+      type: "log" as const,
+      level: "info",
+      message: `Perf startup(core-ready): ${startMs}ms`,
+    });
+  }
+
+  private async runDeferredInit(): Promise<void> {
+    this.emit("event", {
+      type: "log" as const,
+      level: "info",
+      message: "Background warmup started",
+    });
     // Start file watcher for real-time codebase awareness
     const watcher = getFileWatcher();
     watcher.start();
@@ -242,14 +272,19 @@ export class BuildAgent extends EventEmitter {
       if (configs.length > 0) {
         const client = getMcpClient();
         let connectedCount = 0;
-        for (const config of configs) {
-          try {
-            const result = await client.connect(config);
-            connectedCount += result.tools;
-          } catch (e) {
-            logger.warn("mcp", `MCP server connection failed: ${logger.fromError("mcp", e)}`);
+        const concurrency = 3;
+        for (let i = 0; i < configs.length; i += concurrency) {
+          const batch = configs.slice(i, i + concurrency);
+          const settled = await Promise.allSettled(batch.map((config) => client.connect(config)));
+          for (const item of settled) {
+            if (item.status === "fulfilled") {
+              connectedCount += item.value.tools;
+            } else {
+              logger.warn("mcp", `MCP server connection failed: ${logger.fromError("mcp", item.reason)}`);
+            }
           }
         }
+        ToolRegistry.invalidateCache();
         if (connectedCount > 0) {
           this.emit("event", {
             type: "log" as const,
@@ -260,6 +295,12 @@ export class BuildAgent extends EventEmitter {
       }
     } catch (e) {
       logger.warn("agent", `MCP init error: ${logger.fromError("mcp", e)}`);
+    } finally {
+      this.emit("event", {
+        type: "log" as const,
+        level: "info",
+        message: "Background warmup completed",
+      });
     }
   }
 
@@ -293,6 +334,7 @@ export class BuildAgent extends EventEmitter {
     // Clean up MCP connections
     try {
       await getMcpClient().disconnectAll();
+      ToolRegistry.invalidateCache();
     } catch {
       // non-critical
     }
@@ -304,7 +346,7 @@ export class BuildAgent extends EventEmitter {
       // non-critical
     }
 
-    await fireHooks("on-stop");
+    await fireHooks("on-stop", {}, { blocking: false });
 
     // Auto-summarize session before saving
     await this.autoSummarizeSession();
@@ -314,9 +356,12 @@ export class BuildAgent extends EventEmitter {
 
   // ─── Main streaming loop ───────────────────────────────────────────────────
   async *processUserInput(text: string): AsyncGenerator<CLIEvent> {
+    perfMark("agent.turn.begin");
     this.startTime = Date.now();
     this.stepCount = 0;
     this.processing = true;
+    this.runAbortController = new AbortController();
+    setShellAbortSignal(this.runAbortController.signal);
     this.setState("reasoning");
     this.messages.push({ role: "user", content: text });
 
@@ -364,6 +409,7 @@ export class BuildAgent extends EventEmitter {
         system: systemPrompt,
         messages: this.messages,
         tools: ToolRegistry.getTools(),
+        abortSignal: this.runAbortController.signal,
         stopWhen: stepCountIs(this.maxSteps),
         onStepFinish: (step) => {
           this.stepCount++;
@@ -385,17 +431,24 @@ export class BuildAgent extends EventEmitter {
       for await (const event of result.fullStream) {
         switch (event.type) {
           case "text-delta":
+            perfCount("stream.text_delta");
             fullText += event.text;
             yield { type: "text" as const, content: event.text };
             break;
 
           case "reasoning-delta":
+            perfCount("stream.reasoning_delta");
             yield { type: "thinking" as const, content: event.text };
             break;
 
           case "tool-call": {
             this.setState("executing");
-            const input = (event as any).input ?? (event as any).args ?? {};
+            const toolEvent = event as StreamToolEvent;
+            const input =
+              typeof (toolEvent.input ?? toolEvent.args) === "object" &&
+              (toolEvent.input ?? toolEvent.args) !== null
+                ? (toolEvent.input ?? toolEvent.args) as Record<string, unknown>
+                : {};
 
             if (!isAutoApproved(event.toolName, this.mode, input)) {
               yield {
@@ -424,7 +477,8 @@ export class BuildAgent extends EventEmitter {
             await fireHooks("before-tool-call", {
               tool: event.toolName,
               args: JSON.stringify(toolArgs),
-            });
+              signal: this.runAbortController.signal,
+            }, { blocking: true });
             yield {
               type: "step-start" as const,
               toolName: event.toolName,
@@ -449,7 +503,8 @@ export class BuildAgent extends EventEmitter {
             await fireHooks("after-tool-call", {
               tool: event.toolName,
               result: output.slice(0, 1000),
-            });
+              signal: this.runAbortController.signal,
+            }, { blocking: false });
             const success =
               !output.includes('"error"') &&
               !output.includes('"success":false');
@@ -470,15 +525,16 @@ export class BuildAgent extends EventEmitter {
           }
 
           case "error": {
+            const errorEvent = event as StreamErrorEvent;
             const msg =
-              typeof event.error === "object" &&
-              event.error &&
-              "message" in (event.error as any)
-                ? String((event.error as any).message)
+              typeof errorEvent.error === "object" &&
+              errorEvent.error &&
+              "message" in errorEvent.error
+                ? String((errorEvent.error as { message?: unknown }).message)
                     .split("\n")[0]
                     .slice(0, 300)
-                : String(event.error).split("\n")[0].slice(0, 300);
-            await fireHooks("on-error", { error: msg });
+                : String(errorEvent.error).split("\n")[0].slice(0, 300);
+            await fireHooks("on-error", { error: msg, signal: this.runAbortController.signal }, { blocking: false });
             yield { type: "error" as const, message: msg };
             this.emit("event", {
               type: "log" as const,
@@ -512,6 +568,15 @@ export class BuildAgent extends EventEmitter {
         message: msg,
       });
     } finally {
+      const turnMs = perfMeasure("agent.turn.total_ms", "agent.turn.begin");
+      const perf = perfSnapshot();
+      this.emit("event", {
+        type: "log" as const,
+        level: "info",
+        message: `Perf turn: ${turnMs}ms textDeltas=${perf.counters["stream.text_delta"] ?? 0} thinkingDeltas=${perf.counters["stream.reasoning_delta"] ?? 0}`,
+      });
+      this.runAbortController = null;
+      setShellAbortSignal(undefined);
       this.processing = false;
       this.setState("monitoring");
       await this.saveState();

@@ -1,5 +1,5 @@
 import { streamText, stepCountIs } from "ai";
-import type { LanguageModel } from "ai";
+import type { LanguageModel, ToolSet } from "ai";
 import { ToolRegistry } from "./tool-registry";
 import { getPermissionLevel } from "../permission/index";
 
@@ -101,14 +101,14 @@ export class SubAgent {
    * Filter the tool registry to only include read-only tools.
    * Sub-agents are constrained to safe operations.
    */
-  private filterReadonlyTools(): Record<string, any> {
+  private filterReadonlyTools(): ToolSet {
     const allTools = ToolRegistry.getTools();
-    const filtered: Record<string, any> = {};
+    const filtered: ToolSet = {};
 
     for (const [name, t] of Object.entries(allTools)) {
       const level = getPermissionLevel(name);
       if (level === "allow") {
-        filtered[name] = t;
+        filtered[name] = t as ToolSet[string];
       }
     }
 

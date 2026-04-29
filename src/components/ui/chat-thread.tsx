@@ -21,7 +21,7 @@ export const ChatThread = ({
       };
 
   return (
-    <Box flexDirection="column" {...containerProps}>
+    <Box flexDirection="column" flexGrow={1} {...containerProps}>
       {children}
     </Box>
   );

@@ -26,7 +26,7 @@ export interface McpToolRegistration {
 export class McpClient {
   private servers = new Map<string, Client>();
   private tools = new Map<string, McpToolRegistration>();
-  private aiSdkTools: Record<string, any> = {};
+  private aiSdkTools: Record<string, unknown> = {};
 
   /**
    * Load MCP server configurations from .w3x/mcp.json.
@@ -95,13 +95,17 @@ export class McpClient {
   private buildAiSdkTool(
     serverName: string,
     mcpTool: McpTool,
-  ): any {
+  ): unknown {
+    type JsonSchemaLike = { properties?: Record<string, { type?: string; description?: string }>; required?: string[] };
+    type McpContent = { text?: string };
+    type McpResult = { isError?: boolean; content?: McpContent[] };
     // Build a loose zod schema from JSON schema properties
     const shape: Record<string, z.ZodTypeAny> = {};
+    const schema = (mcpTool.inputSchema ?? {}) as JsonSchemaLike;
 
-    if (mcpTool.inputSchema && (mcpTool.inputSchema as any).properties) {
-      const props = (mcpTool.inputSchema as any).properties as Record<string, { type?: string; description?: string }>;
-      const required = ((mcpTool.inputSchema as any).required as string[]) ?? [];
+    if (schema.properties) {
+      const props = schema.properties;
+      const required = schema.required ?? [];
 
       for (const [key, prop] of Object.entries(props)) {
         const desc = prop.description ?? key;
@@ -117,7 +121,7 @@ export class McpClient {
 
     return tool({
       description: `[MCP:${serverName}] ${mcpTool.description ?? mcpTool.name}`,
-      inputSchema: z.object(shape as any),
+      inputSchema: z.object(shape),
       execute: async (args: Record<string, unknown>) => {
         const client = this.servers.get(serverName);
         if (!client) {
@@ -130,15 +134,16 @@ export class McpClient {
             arguments: args,
           });
 
-          if ((result as any).isError) {
-            const content = Array.isArray((result as any).content)
-              ? (result as any).content.map((c: any) => c.text).join("\n")
+          const typedResult = result as McpResult;
+          if (typedResult.isError) {
+            const content = Array.isArray(typedResult.content)
+              ? typedResult.content.map((c) => c.text ?? "").join("\n")
               : "Unknown error";
             return { error: "MCP tool error", content };
           }
 
-          const content = Array.isArray((result as any).content)
-            ? (result as any).content.map((c: any) => c.text).join("\n")
+          const content = Array.isArray(typedResult.content)
+            ? typedResult.content.map((c) => c.text ?? "").join("\n")
             : String(result);
 
           return { success: true, content };
@@ -152,7 +157,7 @@ export class McpClient {
   /**
    * Get all AI SDK tools from connected MCP servers.
    */
-  getTools(): Record<string, any> {
+  getTools(): Record<string, unknown> {
     return { ...this.aiSdkTools };
   }
 
