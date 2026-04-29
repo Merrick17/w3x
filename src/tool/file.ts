@@ -67,15 +67,8 @@ export const fileTools = {
       offset: z.number().optional().describe("Start reading at this line number (0-indexed)"),
       limit: z.number().optional().describe("Maximum number of lines to read"),
     }),
-    execute: async ({
-      path,
-      offset,
-      limit,
-    }: {
-      path: string;
-      offset?: number;
-      limit?: number;
-    }) => readFileContent(safe(path), offset, limit),
+    execute: async ({ path, offset, limit }: { path: string; offset?: number; limit?: number }) =>
+      readFileContent(safe(path), offset, limit),
   }),
 
   read: tool({
@@ -86,15 +79,8 @@ export const fileTools = {
       offset: z.number().optional().describe("Start reading at this line number (0-indexed)"),
       limit: z.number().optional().describe("Maximum number of lines to read"),
     }),
-    execute: async ({
-      path,
-      offset,
-      limit,
-    }: {
-      path: string;
-      offset?: number;
-      limit?: number;
-    }) => readFileContent(safe(path), offset, limit),
+    execute: async ({ path, offset, limit }: { path: string; offset?: number; limit?: number }) =>
+      readFileContent(safe(path), offset, limit),
   }),
 
   writeFile: tool({
@@ -219,7 +205,9 @@ export const fileTools = {
         CURRENT_WORKSPACE = p;
         return { success: true, message: `Workspace changed to ${p}`, path: p };
       } catch (err) {
-        return { error: `Failed to access path: ${err instanceof Error ? err.message : String(err)}` };
+        return {
+          error: `Failed to access path: ${err instanceof Error ? err.message : String(err)}`,
+        };
       }
     },
   }),

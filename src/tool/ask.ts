@@ -13,13 +13,7 @@ export const askTool = tool({
       .optional()
       .describe("Available choices (2-4 options). If omitted, user provides free-text response."),
   }),
-  execute: async ({
-    question,
-    options,
-  }: {
-    question: string;
-    options?: string[];
-  }) => {
+  execute: async ({ question, options }: { question: string; options?: string[] }) => {
     return {
       question,
       options: options ?? [],

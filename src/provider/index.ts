@@ -30,7 +30,13 @@ const DEFAULT_MODEL = process.env.GOOGLE_GENERATIVE_AI_API_KEY
  */
 export function detectProvider(modelId: string): SupportedProvider {
   if (modelId.startsWith("gemini-")) return "google";
-  if (modelId.startsWith("gpt-") || modelId.startsWith("o1-") || modelId.startsWith("o3-") || modelId.startsWith("o4-")) return "openai";
+  if (
+    modelId.startsWith("gpt-") ||
+    modelId.startsWith("o1-") ||
+    modelId.startsWith("o3-") ||
+    modelId.startsWith("o4-")
+  )
+    return "openai";
   if (modelId.startsWith("claude-")) return "anthropic";
   return "ollama";
 }

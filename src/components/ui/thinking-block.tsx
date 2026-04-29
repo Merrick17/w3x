@@ -26,40 +26,28 @@ export const ThinkingBlock = ({
   const theme = useTheme();
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
-  useInput((input, key) => {
-    if ((key.return || input === " ")) {
-      setCollapsed((c) => !c);
-    }
-  }, { isActive: focused });
+  useInput(
+    (input, key) => {
+      if (key.return || input === " ") {
+        setCollapsed((c) => !c);
+      }
+    },
+    { isActive: focused },
+  );
 
-  const tokenStr =
-    tokenCount === undefined ? null : `${tokenCount.toLocaleString()} tokens`;
-  const durationStr =
-    duration === undefined ? null : `${(duration / 1000).toFixed(1)}s`;
+  const tokenStr = tokenCount === undefined ? null : `${tokenCount.toLocaleString()} tokens`;
+  const durationStr = duration === undefined ? null : `${(duration / 1000).toFixed(1)}s`;
 
-  const headerParts = [
-    streaming ? "Thinking..." : label,
-    tokenStr,
-    durationStr,
-  ].filter(Boolean);
+  const headerParts = [streaming ? "Thinking..." : label, tokenStr, durationStr].filter(Boolean);
 
   const headerText = headerParts.join(" · ");
 
   return (
-    <Box
-      flexDirection="column"
-      borderStyle="single"
-      borderColor={theme.colors.border}
-      paddingX={1}
-    >
+    <Box flexDirection="column" borderStyle="single" borderColor={theme.colors.border} paddingX={1}>
       <Box gap={1}>
-        <Text color={theme.colors.mutedForeground}>
-          {collapsed ? "▶" : "▼"}
-        </Text>
+        <Text color={theme.colors.mutedForeground}>{collapsed ? "▶" : "▼"}</Text>
         <Text
-          color={
-            streaming ? theme.colors.primary : theme.colors.mutedForeground
-          }
+          color={streaming ? theme.colors.primary : theme.colors.mutedForeground}
           dimColor={!streaming}
         >
           {headerText}

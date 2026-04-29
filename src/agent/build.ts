@@ -12,21 +12,19 @@ import { compactContext } from "../context/compaction";
 import { loadInstructions, formatInstructionsBlock, type LoadedInstructions } from "../skill/index";
 import { getFileWatcher } from "../watch/index";
 import { getMcpClient } from "../mcp/index";
-import { isAutoApproved, setPlanMode, recordDecision, loadLearnedPermissions, saveLearnedPermissions } from "../permission/index";
+import {
+  isAutoApproved,
+  setPlanMode,
+  recordDecision,
+  loadLearnedPermissions,
+  saveLearnedPermissions,
+} from "../permission/index";
 import { fireHooks } from "../hooks/engine";
 import { logger } from "../lib/logger";
 import { setDelegationModel } from "../tool/delegate";
-import {
-  createPhase,
-  canTransition,
-  type AgentPhase,
-} from "./state-machine";
+import { createPhase, canTransition, type AgentPhase } from "./state-machine";
 import type { AgentState, AgentMode, CLIEvent, TaskType } from "../types";
-import {
-  mkdir,
-  readFile as fsReadFile,
-  writeFile as fsWriteFile,
-} from "node:fs/promises";
+import { mkdir, readFile as fsReadFile, writeFile as fsWriteFile } from "node:fs/promises";
 import { PINNED_FILES } from "../tool/index";
 import { perfMark, perfMeasure, perfCount, perfSnapshot } from "../lib/perf";
 import { setShellAbortSignal } from "../tool/shell";
@@ -37,14 +35,22 @@ type StreamErrorEvent = { error?: unknown };
 // ─── State → Phase mapping ─────────────────────────────────────────────
 function stateToPhase(s: AgentState): AgentPhase {
   switch (s) {
-    case "idle": return createPhase("idle");
-    case "monitoring": return createPhase("monitoring");
-    case "reasoning": return createPhase("reasoning");
-    case "executing": return createPhase("executing", { currentStep: 0, totalSteps: 0 });
-    case "planning": return createPhase("planning");
-    case "awaiting-approval": return createPhase("awaiting-approval", { toolName: "", args: {} });
-    case "error": return createPhase("error", { message: "", recoverable: true });
-    case "done": return createPhase("idle");
+    case "idle":
+      return createPhase("idle");
+    case "monitoring":
+      return createPhase("monitoring");
+    case "reasoning":
+      return createPhase("reasoning");
+    case "executing":
+      return createPhase("executing", { currentStep: 0, totalSteps: 0 });
+    case "planning":
+      return createPhase("planning");
+    case "awaiting-approval":
+      return createPhase("awaiting-approval", { toolName: "", args: {} });
+    case "error":
+      return createPhase("error", { message: "", recoverable: true });
+    case "done":
+      return createPhase("idle");
   }
 }
 
@@ -120,7 +126,6 @@ export class BuildAgent extends EventEmitter {
   private startTime = 0;
   private totalTokens = { prompt: 0, completion: 0, total: 0 };
   private instructions: LoadedInstructions = { agentsMd: "", skills: [], totalChars: 0 };
-
 
   // Per-call command context (set by command handlers)
   private commandSuffix = "";
@@ -280,7 +285,10 @@ export class BuildAgent extends EventEmitter {
             if (item.status === "fulfilled") {
               connectedCount += item.value.tools;
             } else {
-              logger.warn("mcp", `MCP server connection failed: ${logger.fromError("mcp", item.reason)}`);
+              logger.warn(
+                "mcp",
+                `MCP server connection failed: ${logger.fromError("mcp", item.reason)}`,
+              );
             }
           }
         }
@@ -369,8 +377,7 @@ export class BuildAgent extends EventEmitter {
     const systemPrompt = await this.buildSystemPrompt();
 
     // Select model via router (command context or prompt heuristic)
-    const taskType =
-      this.commandTaskType !== "general" ? this.commandTaskType : undefined;
+    const taskType = this.commandTaskType !== "general" ? this.commandTaskType : undefined;
     const model = taskType
       ? this.router.getModelForTask(taskType)
       : this.router.getModelForPrompt(text).model;
@@ -447,7 +454,7 @@ export class BuildAgent extends EventEmitter {
             const input =
               typeof (toolEvent.input ?? toolEvent.args) === "object" &&
               (toolEvent.input ?? toolEvent.args) !== null
-                ? (toolEvent.input ?? toolEvent.args) as Record<string, unknown>
+                ? ((toolEvent.input ?? toolEvent.args) as Record<string, unknown>)
                 : {};
 
             if (!isAutoApproved(event.toolName, this.mode, input)) {
@@ -471,14 +478,16 @@ export class BuildAgent extends EventEmitter {
             }
 
             const toolArgs =
-              typeof input === "object" && input !== null
-                ? (input as Record<string, unknown>)
-                : {};
-            await fireHooks("before-tool-call", {
-              tool: event.toolName,
-              args: JSON.stringify(toolArgs),
-              signal: this.runAbortController.signal,
-            }, { blocking: true });
+              typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
+            await fireHooks(
+              "before-tool-call",
+              {
+                tool: event.toolName,
+                args: JSON.stringify(toolArgs),
+                signal: this.runAbortController.signal,
+              },
+              { blocking: true },
+            );
             yield {
               type: "step-start" as const,
               toolName: event.toolName,
@@ -497,17 +506,17 @@ export class BuildAgent extends EventEmitter {
 
           case "tool-result": {
             const output =
-              typeof event.output === "string"
-                ? event.output
-                : JSON.stringify(event.output);
-            await fireHooks("after-tool-call", {
-              tool: event.toolName,
-              result: output.slice(0, 1000),
-              signal: this.runAbortController.signal,
-            }, { blocking: false });
-            const success =
-              !output.includes('"error"') &&
-              !output.includes('"success":false');
+              typeof event.output === "string" ? event.output : JSON.stringify(event.output);
+            await fireHooks(
+              "after-tool-call",
+              {
+                tool: event.toolName,
+                result: output.slice(0, 1000),
+                signal: this.runAbortController.signal,
+              },
+              { blocking: false },
+            );
+            const success = !output.includes('"error"') && !output.includes('"success":false');
             yield {
               type: "step-end" as const,
               toolName: event.toolName,
@@ -534,7 +543,11 @@ export class BuildAgent extends EventEmitter {
                     .split("\n")[0]
                     .slice(0, 300)
                 : String(errorEvent.error).split("\n")[0].slice(0, 300);
-            await fireHooks("on-error", { error: msg, signal: this.runAbortController.signal }, { blocking: false });
+            await fireHooks(
+              "on-error",
+              { error: msg, signal: this.runAbortController.signal },
+              { blocking: false },
+            );
             yield { type: "error" as const, message: msg };
             this.emit("event", {
               type: "log" as const,
@@ -557,9 +570,7 @@ export class BuildAgent extends EventEmitter {
       });
       yield { type: "done" as const, summary: fullText.slice(-500) };
     } catch (err) {
-      const msg = (err instanceof Error ? err.message : String(err))
-        .split("\n")[0]
-        .slice(0, 300);
+      const msg = (err instanceof Error ? err.message : String(err)).split("\n")[0].slice(0, 300);
       logger.error("agent", `Stream error: ${msg}`);
       yield { type: "error" as const, message: msg };
       this.emit("event", {
@@ -610,9 +621,7 @@ export class BuildAgent extends EventEmitter {
         // In plan-only mode: just show the plan, don't execute
         yield {
           type: "done" as const,
-          summary: plan.steps
-            .map((s, i) => `${i + 1}. ${s.description}`)
-            .join("\n"),
+          summary: plan.steps.map((s, i) => `${i + 1}. ${s.description}`).join("\n"),
         };
         return;
       }
@@ -713,11 +722,7 @@ export class BuildAgent extends EventEmitter {
       });
 
       if (text.trim()) {
-        await saveSessionSummary(
-          text.trim(),
-          this.llm.getModelName(),
-          this.messages.length,
-        );
+        await saveSessionSummary(text.trim(), this.llm.getModelName(), this.messages.length);
         this.emit("event", {
           type: "log" as const,
           level: "info",

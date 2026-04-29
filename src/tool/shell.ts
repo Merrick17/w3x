@@ -63,9 +63,18 @@ export const shellTools = {
       "Execute a shell command. Returns stdout, stderr, and exit code. Use run_in_background for long-running commands.",
     inputSchema: z.object({
       command: z.string().describe("Shell command to execute"),
-      timeout: z.number().optional().describe("Timeout in ms (default: 30000 foreground, 300000 background)"),
-      description: z.string().optional().describe("Clear, concise description of what this command does"),
-      run_in_background: z.boolean().optional().describe("Run command in background without waiting for completion"),
+      timeout: z
+        .number()
+        .optional()
+        .describe("Timeout in ms (default: 30000 foreground, 300000 background)"),
+      description: z
+        .string()
+        .optional()
+        .describe("Clear, concise description of what this command does"),
+      run_in_background: z
+        .boolean()
+        .optional()
+        .describe("Run command in background without waiting for completion"),
     }),
     execute: async ({
       command,
@@ -84,9 +93,18 @@ export const shellTools = {
       "Execute a shell command. Returns stdout, stderr, and exit code. Use run_in_background for long-running commands.",
     inputSchema: z.object({
       command: z.string().describe("Shell command to execute"),
-      timeout: z.number().optional().describe("Timeout in ms (default: 30000 foreground, 300000 background)"),
-      description: z.string().optional().describe("Clear, concise description of what this command does"),
-      run_in_background: z.boolean().optional().describe("Run command in background without waiting for completion"),
+      timeout: z
+        .number()
+        .optional()
+        .describe("Timeout in ms (default: 30000 foreground, 300000 background)"),
+      description: z
+        .string()
+        .optional()
+        .describe("Clear, concise description of what this command does"),
+      run_in_background: z
+        .boolean()
+        .optional()
+        .describe("Run command in background without waiting for completion"),
     }),
     execute: async ({
       command,

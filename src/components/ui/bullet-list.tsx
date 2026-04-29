@@ -61,15 +61,10 @@ const BulletListTreeItem = ({ label, color }: BulletListTreeItemProps) => {
   );
 };
 
-const BulletListCheckItem = ({
-  label,
-  done = false,
-  color,
-}: BulletListCheckItemProps) => {
+const BulletListCheckItem = ({ label, done = false, color }: BulletListCheckItemProps) => {
   const theme = useTheme();
   const icon = done ? "■" : "□";
-  const resolvedColor =
-    color ?? (done ? theme.colors.success : theme.colors.mutedForeground);
+  const resolvedColor = color ?? (done ? theme.colors.success : theme.colors.mutedForeground);
   return (
     <Box flexDirection="row">
       <Text color={resolvedColor}>{`${icon} `}</Text>

@@ -40,10 +40,7 @@ async function loadAgentsMd(): Promise<string> {
  * Follows the OpenCode pattern of skill loading.
  */
 async function loadSkills(): Promise<Array<{ name: string; content: string }>> {
-  const skillDirs = [
-    resolve(cwd(), ".w3x", "skills"),
-    resolve(homedir(), ".w3x", "skills"),
-  ];
+  const skillDirs = [resolve(cwd(), ".w3x", "skills"), resolve(homedir(), ".w3x", "skills")];
 
   const skills: Array<{ name: string; content: string }> = [];
 
@@ -77,13 +74,9 @@ async function loadSkills(): Promise<Array<{ name: string; content: string }>> {
  * Returns a formatted block ready to inject into the system prompt.
  */
 export async function loadInstructions(): Promise<LoadedInstructions> {
-  const [agentsMd, skills] = await Promise.all([
-    loadAgentsMd(),
-    loadSkills(),
-  ]);
+  const [agentsMd, skills] = await Promise.all([loadAgentsMd(), loadSkills()]);
 
-  const totalChars =
-    agentsMd.length + skills.reduce((sum, s) => sum + s.content.length, 0);
+  const totalChars = agentsMd.length + skills.reduce((sum, s) => sum + s.content.length, 0);
 
   return { agentsMd, skills, totalChars };
 }

@@ -55,15 +55,18 @@ export const ToolApproval = ({
     return () => clearInterval(id);
   }, [timeout]);
 
-  useInput((input) => {
-    if (input === "y" || input === "Y") {
-      onApprove?.();
-    } else if (input === "n" || input === "N") {
-      onDeny?.();
-    } else if ((input === "a" || input === "A") && onAlwaysAllow) {
-      onAlwaysAllow();
-    }
-  }, { isActive });
+  useInput(
+    (input) => {
+      if (input === "y" || input === "Y") {
+        onApprove?.();
+      } else if (input === "n" || input === "N") {
+        onDeny?.();
+      } else if ((input === "a" || input === "A") && onAlwaysAllow) {
+        onAlwaysAllow();
+      }
+    },
+    { isActive },
+  );
 
   const riskBorderColor: Record<RiskLevel, string> = {
     high: theme.colors.statusError,

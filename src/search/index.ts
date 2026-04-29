@@ -161,7 +161,10 @@ async function scanCodebase(root: string): Promise<CodeChunk[]> {
 /**
  * Get an embedding model. Tries OpenAI first, then Google, falls back gracefully.
  */
-let embeddingModelCache: ReturnType<typeof openai.embedding> | ReturnType<typeof google.textEmbeddingModel> | null = null;
+let embeddingModelCache:
+  | ReturnType<typeof openai.embedding>
+  | ReturnType<typeof google.textEmbeddingModel>
+  | null = null;
 
 function getEmbeddingModel() {
   if (embeddingModelCache) return embeddingModelCache;
@@ -192,7 +195,13 @@ export async function buildSearchIndex(): Promise<{
   const chunks = await scanCodebase(root);
 
   if (chunks.length === 0) {
-    return { success: false, embedded: false, chunks: 0, files: 0, message: "No source files found to index" };
+    return {
+      success: false,
+      embedded: false,
+      chunks: 0,
+      files: 0,
+      message: "No source files found to index",
+    };
   }
 
   const embeddingModel = getEmbeddingModel();
@@ -257,9 +266,10 @@ export async function buildSearchIndex(): Promise<{
     embedded: embeddings.length > 0,
     chunks: chunks.length,
     files: index.fileCount,
-    message: embeddings.length > 0
-      ? `Indexed ${chunks.length} chunks across ${index.fileCount} files with embeddings in ${Date.now() - buildStart}ms`
-      : `Indexed ${chunks.length} chunks across ${index.fileCount} files (keyword-only, no embedding API key configured) in ${Date.now() - buildStart}ms`,
+    message:
+      embeddings.length > 0
+        ? `Indexed ${chunks.length} chunks across ${index.fileCount} files with embeddings in ${Date.now() - buildStart}ms`
+        : `Indexed ${chunks.length} chunks across ${index.fileCount} files (keyword-only, no embedding API key configured) in ${Date.now() - buildStart}ms`,
   };
 }
 
@@ -286,7 +296,13 @@ export async function semanticSearch(
   query: string,
   topK = 8,
 ): Promise<{
-  results: Array<{ file: string; startLine: number; endLine: number; content: string; score: number }>;
+  results: Array<{
+    file: string;
+    startLine: number;
+    endLine: number;
+    content: string;
+    score: number;
+  }>;
   embedded: boolean;
   query: string;
 }> {
@@ -324,7 +340,9 @@ export async function semanticSearch(
         ...chunk,
         score: cosineSimilarity(queryEmbedding, index.embeddings[i]),
       }));
-      const top = selectTopK(scored, topK * 3, (s) => s.score).filter((s) => s.score > 0.3).slice(0, topK);
+      const top = selectTopK(scored, topK * 3, (s) => s.score)
+        .filter((s) => s.score > 0.3)
+        .slice(0, topK);
 
       void searchStart;
       return {
@@ -350,7 +368,17 @@ function keywordSearch(
   query: string,
   chunks: CodeChunk[],
   topK: number,
-): { results: Array<{ file: string; startLine: number; endLine: number; content: string; score: number }>; embedded: boolean; query: string } {
+): {
+  results: Array<{
+    file: string;
+    startLine: number;
+    endLine: number;
+    content: string;
+    score: number;
+  }>;
+  embedded: boolean;
+  query: string;
+} {
   const lowerQuery = query.toLowerCase();
   const terms = lowerQuery.split(/\s+/).filter((t) => t.length > 1);
 
@@ -374,7 +402,9 @@ function keywordSearch(
     return { ...chunk, score };
   });
 
-  const top = selectTopK(scored, topK * 3, (s) => s.score).filter((s) => s.score > 0).slice(0, topK);
+  const top = selectTopK(scored, topK * 3, (s) => s.score)
+    .filter((s) => s.score > 0)
+    .slice(0, topK);
 
   return {
     results: top.map((s) => ({

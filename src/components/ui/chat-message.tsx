@@ -20,11 +20,7 @@ const formatTime = (date: Date): string =>
   date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 const wrapPlainChildren = (node: ReactNode): ReactNode =>
-  typeof node === "string" || typeof node === "number" ? (
-    <Text>{node}</Text>
-  ) : (
-    node
-  );
+  typeof node === "string" || typeof node === "number" ? <Text>{node}</Text> : node;
 
 export const ChatMessage = ({
   sender,
@@ -46,11 +42,14 @@ export const ChatMessage = ({
     return () => clearInterval(id);
   }, [streaming]);
 
-  useInput((input, key) => {
-    if (initialCollapsed && (key.return || input === " ")) {
-      setIsCollapsed((c) => !c);
-    }
-  }, { isActive: initialCollapsed });
+  useInput(
+    (input, key) => {
+      if (initialCollapsed && (key.return || input === " ")) {
+        setIsCollapsed((c) => !c);
+      }
+    },
+    { isActive: initialCollapsed },
+  );
 
   const roleColor: Record<ChatRole, string> = {
     assistant: theme.colors.success ?? "green",

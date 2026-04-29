@@ -1,10 +1,10 @@
-import { generateText } from 'ai';
-import type { LanguageModel } from 'ai';
-import { randomUUID } from 'node:crypto';
-import { writeFile, mkdir } from 'node:fs/promises';
-import { join } from 'node:path';
-import { cwd } from 'node:process';
-import type { Plan, PlanStep } from '../types';
+import { generateText } from "ai";
+import type { LanguageModel } from "ai";
+import { randomUUID } from "node:crypto";
+import { writeFile, mkdir } from "node:fs/promises";
+import { join } from "node:path";
+import { cwd } from "node:process";
+import type { Plan, PlanStep } from "../types";
 
 // ─── Planner ──────────────────────────────────────────────────────────────────
 
@@ -44,9 +44,7 @@ function formatPlanMarkdown(plan: Plan): string {
   ];
 
   for (const step of plan.steps) {
-    const deps = step.dependsOn?.length
-      ? ` _(depends on: ${step.dependsOn.join(", ")})_`
-      : "";
+    const deps = step.dependsOn?.length ? ` _(depends on: ${step.dependsOn.join(", ")})_` : "";
     lines.push(`${step.id}. **${step.description}**${deps}`);
     if (step.toolHints.length > 0) {
       lines.push(`   Tools: ${step.toolHints.join(", ")}`);
@@ -111,7 +109,7 @@ export class Planner {
         description: s.description ?? `Step ${i + 1}`,
         toolHints: s.toolHints ?? [],
         dependsOn: s.dependsOn ?? [],
-        status: 'pending',
+        status: "pending",
       }));
 
       return {
@@ -122,17 +120,20 @@ export class Planner {
       };
     } catch {
       // Fallback: parse numbered lines
-      const lines = raw.split('\n').filter(l => /^\d+\./.test(l.trim()));
+      const lines = raw.split("\n").filter((l) => /^\d+\./.test(l.trim()));
       const steps: PlanStep[] = lines.map((l, i) => ({
         id: `step-${i + 1}`,
-        description: l.replace(/^\d+\.\s*/, '').trim(),
+        description: l.replace(/^\d+\.\s*/, "").trim(),
         toolHints: [],
-        status: 'pending',
+        status: "pending",
       }));
 
       return {
         goal,
-        steps: steps.length > 0 ? steps : [{ id: 'step-1', description: goal, toolHints: [], status: 'pending' }],
+        steps:
+          steps.length > 0
+            ? steps
+            : [{ id: "step-1", description: goal, toolHints: [], status: "pending" }],
         estimatedSteps: steps.length,
         createdAt: Date.now(),
       };

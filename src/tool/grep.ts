@@ -35,7 +35,10 @@ export const grepTool = tool({
     "Search file contents using regex patterns. Returns matching files with line numbers and context. Use for finding code patterns, function usage, string occurrences, etc.",
   inputSchema: z.object({
     pattern: z.string().describe("Regex pattern to search for"),
-    path: z.string().optional().describe("File or directory to search in. Defaults to project root."),
+    path: z
+      .string()
+      .optional()
+      .describe("File or directory to search in. Defaults to project root."),
     glob: z
       .string()
       .optional()
