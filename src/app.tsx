@@ -26,11 +26,24 @@ import type { ToolCallStatus } from "@/components/ui/tool-call";
 type Overlay = "none" | "help" | "commandPalette" | "modelSelector" | "approval";
 
 const SLASH_CMDS = [
-  "/plan ", "/code ", "/edit ", "/refactor ", "/search ", "/review ",
-  "/test ", "/commit ", "/config ", "/security-review ",
-  "/mode ", "/model ", "/logs ", "/clear ", "/help", "/exit",
+  "/plan ",
+  "/code ",
+  "/edit ",
+  "/refactor ",
+  "/search ",
+  "/review ",
+  "/test ",
+  "/commit ",
+  "/config ",
+  "/security-review ",
+  "/mode ",
+  "/model ",
+  "/logs ",
+  "/clear ",
+  "/help",
+  "/exit",
 ];
-const fmtN = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+const fmtN = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n));
 
 const SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 type ModelInfo = { id: string; provider: string; context?: number };
@@ -58,7 +71,11 @@ function normalizeAssistantMarkdown(content: string): string {
     }
     if (/^\|[-:\s|]+\|?$/.test(trimmed)) continue;
     if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
-      const cells = trimmed.slice(1, -1).split("|").map((c) => c.trim()).filter(Boolean);
+      const cells = trimmed
+        .slice(1, -1)
+        .split("|")
+        .map((c) => c.trim())
+        .filter(Boolean);
       out.push(cells.join("  |  "));
       continue;
     }
@@ -89,7 +106,9 @@ const LiveClock = memo(function LiveClock() {
     const id = setInterval(() => setClockTime(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
-  return <Text dimColor>{clockTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>;
+  return (
+    <Text dimColor>{clockTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>
+  );
 });
 
 const ThinkingSpinner = memo(function ThinkingSpinner() {
@@ -141,11 +160,20 @@ const HeaderBar = memo(function HeaderBar({
   modelName: string;
 }) {
   return (
-    <Box borderStyle="round" borderColor={t.panelBorderActive} paddingX={1} justifyContent="space-between">
+    <Box
+      borderStyle="round"
+      borderColor={t.panelBorderActive}
+      paddingX={1}
+      justifyContent="space-between"
+    >
       <Box gap={1}>
-        <Text color={t.primary} bold>W3X</Text>
+        <Text color={t.primary} bold>
+          W3X
+        </Text>
         <Text color={t.mutedForeground}>|</Text>
-        <Text color={mode === "plan" ? t.warning : t.success} bold>{mode.toUpperCase()}</Text>
+        <Text color={mode === "plan" ? t.warning : t.success} bold>
+          {mode.toUpperCase()}
+        </Text>
       </Box>
       <Box gap={1}>
         <Text color={processing ? t.accent : state === "error" ? t.error : t.success}>
@@ -188,7 +216,11 @@ const InputPanel = memo(function InputPanel({
           <Text dimColor>Tab↹</Text>
         </Box>
       )}
-      <Box borderStyle="round" borderColor={overlay === "none" ? t.panelBorderActive : t.panelBorder} paddingX={1}>
+      <Box
+        borderStyle="round"
+        borderColor={overlay === "none" ? t.panelBorderActive : t.panelBorder}
+        paddingX={1}
+      >
         <Text color={overlay === "none" ? t.primary : t.mutedForeground} bold>
           {mode === "plan" ? "PLAN" : "RUN"}{" "}
         </Text>
@@ -230,13 +262,22 @@ const SidebarPanel = memo(function SidebarPanel({
 }) {
   return (
     <Box width={40} marginLeft={1} flexDirection="column">
-      <Box flexDirection="column" borderStyle="round" borderColor={t.panelBorder} paddingX={1} height={dims.rows - 8}>
-        <Text bold color={t.primary}>Logs</Text>
+      <Box
+        flexDirection="column"
+        borderStyle="round"
+        borderColor={t.panelBorder}
+        paddingX={1}
+        height={dims.rows - 8}
+      >
+        <Text bold color={t.primary}>
+          Logs
+        </Text>
         <Box flexDirection="column" flexGrow={1}>
           {logs.slice(-20).map((l, i: number) => (
             <Box key={i} gap={1}>
               <Text color={t.mutedForeground}>
-                {String(l.ts.getHours()).padStart(2, "0")}:{String(l.ts.getMinutes()).padStart(2, "0")}
+                {String(l.ts.getHours()).padStart(2, "0")}:
+                {String(l.ts.getMinutes()).padStart(2, "0")}
               </Text>
               <Text color={l.level === "error" ? t.error : l.level === "warn" ? t.warning : t.info}>
                 {l.level.toUpperCase().padEnd(4)}
@@ -248,8 +289,16 @@ const SidebarPanel = memo(function SidebarPanel({
           ))}
         </Box>
       </Box>
-      <Box flexDirection="column" borderStyle="round" borderColor={t.panelBorder} paddingX={1} marginTop={1}>
-        <Text bold color={t.primary}>Resources</Text>
+      <Box
+        flexDirection="column"
+        borderStyle="round"
+        borderColor={t.panelBorder}
+        paddingX={1}
+        marginTop={1}
+      >
+        <Text bold color={t.primary}>
+          Resources
+        </Text>
         <TokenUsage prompt={tokens.prompt} completion={tokens.completion} showCost />
         <ContextMeter used={tokens.total} limit={contextLimit} width={30} showPercent />
       </Box>
@@ -257,11 +306,7 @@ const SidebarPanel = memo(function SidebarPanel({
   );
 });
 
-const RenderStats = memo(function RenderStats({
-  section,
-}: {
-  section: string;
-}) {
+const RenderStats = memo(function RenderStats({ section }: { section: string }) {
   const renders = useRef(0);
   renders.current += 1;
   if (!SHOW_RENDER_STATS) return null;
@@ -274,9 +319,23 @@ function AppContent({ agent }: { agent: BuildAgent }) {
   const t = theme.colors;
 
   const {
-    messages, liveMessage, state, mode, processing, tokens, stepCount, logs,
-    pendingApproval, submit, clearMessages, setMode, setModel,
-    approve, reject, getModels, cancelActive,
+    messages,
+    liveMessage,
+    state,
+    mode,
+    processing,
+    tokens,
+    stepCount,
+    logs,
+    pendingApproval,
+    submit,
+    clearMessages,
+    setMode,
+    setModel,
+    approve,
+    reject,
+    getModels,
+    cancelActive,
   } = useAgent(agent);
 
   const editor = useLineEditor();
@@ -292,10 +351,13 @@ function AppContent({ agent }: { agent: BuildAgent }) {
 
   // Terminal resize
   useEffect(() => {
-    const h = () => setDims({ cols: process.stdout.columns || 80, rows: process.stdout.rows || 24 });
+    const h = () =>
+      setDims({ cols: process.stdout.columns || 80, rows: process.stdout.rows || 24 });
     h();
     process.stdout.on("resize", h);
-    return () => { process.stdout.off("resize", h); };
+    return () => {
+      process.stdout.off("resize", h);
+    };
   }, []);
 
   // Reset history to default when new turn starts
@@ -317,56 +379,163 @@ function AppContent({ agent }: { agent: BuildAgent }) {
     setOverlay("none");
     leaveOverlay();
   }, [leaveOverlay]);
-  const openOverlay = useCallback((name: Overlay) => {
-    setOverlay(name);
-    if (name !== "none") enterOverlay();
-  }, [enterOverlay]);
+  const openOverlay = useCallback(
+    (name: Overlay) => {
+      setOverlay(name);
+      if (name !== "none") enterOverlay();
+    },
+    [enterOverlay],
+  );
 
-  const doSubmit = useCallback(async (text: string) => {
-    const tr = text.trim();
-    if (!tr) return;
-    editor.commitToHistory(tr);
-    editor.clear();
-    if (tr.startsWith("/")) {
-      const [cmd, ...rest] = tr.split(/\s+/);
-      const arg = rest.join(" ");
-      const tok = cmd.toLowerCase();
-      switch (tok) {
-        case "/mode": if (arg === "plan" || arg === "build") setMode(arg as AgentMode); return;
-        case "/model": if (arg) setModel(arg); return;
-        case "/y": approve(); close(); return;
-        case "/n": reject(); close(); return;
-        case "/clear": clearMessages(); return;
-        case "/logs": setShowLogs(v => !v); return;
-        case "/help": openOverlay("help"); return;
-        case "/exit": case "/quit": agent.stop().then(() => exit()); return;
+  const doSubmit = useCallback(
+    async (text: string) => {
+      const tr = text.trim();
+      if (!tr) return;
+      editor.commitToHistory(tr);
+      editor.clear();
+      if (tr.startsWith("/")) {
+        const [cmd, ...rest] = tr.split(/\s+/);
+        const arg = rest.join(" ");
+        const tok = cmd.toLowerCase();
+        switch (tok) {
+          case "/mode":
+            if (arg === "plan" || arg === "build") setMode(arg as AgentMode);
+            return;
+          case "/model":
+            if (arg) setModel(arg);
+            return;
+          case "/y":
+            approve();
+            close();
+            return;
+          case "/n":
+            reject();
+            close();
+            return;
+          case "/clear":
+            clearMessages();
+            return;
+          case "/logs":
+            setShowLogs((v) => !v);
+            return;
+          case "/help":
+            openOverlay("help");
+            return;
+          case "/exit":
+          case "/quit":
+            agent.stop().then(() => exit());
+            return;
+        }
+        const dispatched = await dispatchCommand(tr, agent);
+        if (dispatched.handled) return;
       }
-      const dispatched = await dispatchCommand(tr, agent);
-      if (dispatched.handled) return;
-    }
-    await submit(tr);
-  }, [editor, submit, setMode, setModel, approve, reject, clearMessages, openOverlay, agent, exit, close]);
+      await submit(tr);
+    },
+    [
+      editor,
+      submit,
+      setMode,
+      setModel,
+      approve,
+      reject,
+      clearMessages,
+      openOverlay,
+      agent,
+      exit,
+      close,
+    ],
+  );
 
-  const paletteCommands: Command[] = useMemo(() => [
-    { id: "logs", label: "Toggle Logs", description: "Show/hide log panel", group: "View", onSelect: () => { setShowLogs(v => !v); close(); } },
-    { id: "help", label: "Show Help", description: "Display help and shortcuts", group: "View", onSelect: () => { openOverlay("help"); close(); } },
-    { id: "model", label: "Select Model", description: "Choose an LLM model", group: "Agent", onSelect: () => { openOverlay("modelSelector"); close(); } },
-    { id: "plan", label: "Set Plan Mode", description: "Require approval for tools", group: "Agent", onSelect: () => { setMode("plan"); close(); } },
-    { id: "build", label: "Set Build Mode", description: "Auto-approve tools", group: "Agent", onSelect: () => { setMode("build"); close(); } },
-    { id: "clear", label: "Clear History", description: "Clear all messages", group: "Agent", onSelect: () => { clearMessages(); close(); } },
-    { id: "exit", label: "Exit Agent", description: "Quit W3X", group: "System", shortcut: "Ctrl+X", onSelect: () => { agent.stop().then(() => exit()); } },
-  ], [close, setMode, clearMessages, openOverlay, agent, exit]);
+  const paletteCommands: Command[] = useMemo(
+    () => [
+      {
+        id: "logs",
+        label: "Toggle Logs",
+        description: "Show/hide log panel",
+        group: "View",
+        onSelect: () => {
+          setShowLogs((v) => !v);
+          close();
+        },
+      },
+      {
+        id: "help",
+        label: "Show Help",
+        description: "Display help and shortcuts",
+        group: "View",
+        onSelect: () => {
+          openOverlay("help");
+          close();
+        },
+      },
+      {
+        id: "model",
+        label: "Select Model",
+        description: "Choose an LLM model",
+        group: "Agent",
+        onSelect: () => {
+          openOverlay("modelSelector");
+          close();
+        },
+      },
+      {
+        id: "plan",
+        label: "Set Plan Mode",
+        description: "Require approval for tools",
+        group: "Agent",
+        onSelect: () => {
+          setMode("plan");
+          close();
+        },
+      },
+      {
+        id: "build",
+        label: "Set Build Mode",
+        description: "Auto-approve tools",
+        group: "Agent",
+        onSelect: () => {
+          setMode("build");
+          close();
+        },
+      },
+      {
+        id: "clear",
+        label: "Clear History",
+        description: "Clear all messages",
+        group: "Agent",
+        onSelect: () => {
+          clearMessages();
+          close();
+        },
+      },
+      {
+        id: "exit",
+        label: "Exit Agent",
+        description: "Quit W3X",
+        group: "System",
+        shortcut: "Ctrl+X",
+        onSelect: () => {
+          agent.stop().then(() => exit());
+        },
+      },
+    ],
+    [close, setMode, clearMessages, openOverlay, agent, exit],
+  );
 
-  const modelOptions: ModelOption[] = useMemo(() => getModels().map((m: { id: string; provider: string }) => ({
-    id: m.id,
-    name: m.id.split("/").pop() ?? m.id,
-    provider: m.provider,
-  })), [getModels]);
+  const modelOptions: ModelOption[] = useMemo(
+    () =>
+      getModels().map((m: { id: string; provider: string }) => ({
+        id: m.id,
+        name: m.id.split("/").pop() ?? m.id,
+        provider: m.provider,
+      })),
+    [getModels],
+  );
 
   // Slash-command inline suggestions shown above the input box
   const slashSuggestions = useMemo(() => {
     if (!editor.value.startsWith("/") || overlay !== "none") return [];
-    return SLASH_CMDS.filter(c => c.trimEnd().startsWith(editor.value)).slice(0, 6);
+    return SLASH_CMDS.filter((c) => c.trimEnd().startsWith(editor.value)).slice(0, 6);
   }, [editor.value, overlay]);
 
   useInputRouter({
@@ -428,126 +597,200 @@ function AppContent({ agent }: { agent: BuildAgent }) {
   return (
     <Box flexDirection="column" flexGrow={1}>
       <AppShell>
-      <RenderStats section="app" />
-      <HeaderBar
-        t={t}
-        mode={mode}
-        processing={processing}
-        state={state}
-        modelName={agent.getModel().split("/").pop() ?? "?"}
-      />
-      <RenderStats section="header" />
+        <RenderStats section="app" />
+        <HeaderBar
+          t={t}
+          mode={mode}
+          processing={processing}
+          state={state}
+          modelName={agent.getModel().split("/").pop() ?? "?"}
+        />
+        <RenderStats section="header" />
 
-      {/* ═══ BODY ═══ */}
-      <Box flexDirection="row" flexGrow={1} marginTop={1} overflow="hidden">
-        {/* Left: conversation */}
-        <ChatThread maxHeight={dims.rows - 12}>
-          {messages.length === 0 && !processing ? (
-            /* ── Welcome screen ── */
-            <Box flexDirection="column" flexGrow={1} alignItems="center" justifyContent="center">
-              <Box flexDirection="column" alignItems="center" borderStyle="round" borderColor={t.border} paddingX={4} paddingY={1}>
-                <Text bold color={t.primary}>W3X v2.1.0</Text>
-                <Text color={t.secondary}>Autonomous Coding Agent</Text>
-                <Box marginTop={1} flexDirection="column">
-                  <Box gap={1}><Text color={t.accent}>●</Text><Text color={t.mutedForeground}>Ask a question or describe a task</Text></Box>
-                  <Box gap={1}><Text color={t.accent}>●</Text><Text color={t.mutedForeground}>Type</Text><Text color={t.primary}>/</Text><Text color={t.mutedForeground}> for slash commands</Text></Box>
-                  <Box gap={1}><Text color={t.accent}>●</Text><Text color={t.mutedForeground}>Press</Text><Text color={t.primary}>Ctrl+K</Text><Text color={t.mutedForeground}> for command palette</Text></Box>
+        {/* ═══ BODY ═══ */}
+        <Box flexDirection="row" flexGrow={1} marginTop={1} overflow="hidden">
+          {/* Left: conversation */}
+          <ChatThread maxHeight={dims.rows - 12}>
+            {messages.length === 0 && !processing ? (
+              /* ── Welcome screen ── */
+              <Box flexDirection="column" flexGrow={1} alignItems="center" justifyContent="center">
+                <Box
+                  flexDirection="column"
+                  alignItems="center"
+                  borderStyle="round"
+                  borderColor={t.border}
+                  paddingX={4}
+                  paddingY={1}
+                >
+                  <Text bold color={t.primary}>
+                    W3X v2.1.0
+                  </Text>
+                  <Text color={t.secondary}>Autonomous Coding Agent</Text>
+                  <Box marginTop={1} flexDirection="column">
+                    <Box gap={1}>
+                      <Text color={t.accent}>●</Text>
+                      <Text color={t.mutedForeground}>Ask a question or describe a task</Text>
+                    </Box>
+                    <Box gap={1}>
+                      <Text color={t.accent}>●</Text>
+                      <Text color={t.mutedForeground}>Type</Text>
+                      <Text color={t.primary}>/</Text>
+                      <Text color={t.mutedForeground}> for slash commands</Text>
+                    </Box>
+                    <Box gap={1}>
+                      <Text color={t.accent}>●</Text>
+                      <Text color={t.mutedForeground}>Press</Text>
+                      <Text color={t.primary}>Ctrl+K</Text>
+                      <Text color={t.mutedForeground}> for command palette</Text>
+                    </Box>
+                  </Box>
+                  <Box marginTop={1}>
+                    <Text dimColor>{SLASH_CMDS.slice(0, 5).join("  ")}</Text>
+                  </Box>
                 </Box>
-                <Box marginTop={1}><Text dimColor>{SLASH_CMDS.slice(0, 5).join("  ")}</Text></Box>
               </Box>
-            </Box>
-          ) : (
-            <>
-              {/* Completed messages — frozen in Static for performance */}
-              <Static items={doneMsgs.slice(-historyLines)}>
-                {(msg) => (
-                  <Box key={msg.id} flexDirection="column" marginBottom={1}>
-                    {msg.role === "user" ? (
-                      <ChatMessage sender="user" name="YOU">
-                        <Box flexDirection="column" width="100%">
-                          {msg.content.split("\n").map((line: string, i: number) => (
-                            <Text key={i} wrap="truncate-end">{line || " "}</Text>
-                          ))}
+            ) : (
+              <>
+                {/* Completed messages — frozen in Static for performance */}
+                <Static items={doneMsgs.slice(-historyLines)}>
+                  {(msg) => (
+                    <Box key={msg.id} flexDirection="column" marginBottom={1}>
+                      {msg.role === "user" ? (
+                        <ChatMessage sender="user" name="YOU">
+                          <Box flexDirection="column" width="100%">
+                            {msg.content.split("\n").map((line: string, i: number) => (
+                              <Text key={i} wrap="truncate-end">
+                                {line || " "}
+                              </Text>
+                            ))}
+                          </Box>
+                        </ChatMessage>
+                      ) : msg.role === "system" ? (
+                        <Box paddingLeft={2}>
+                          <Text color={t.warning}>{msg.content.slice(0, 200)}</Text>
                         </Box>
-                      </ChatMessage>
-                    ) : msg.role === "system" ? (
-                      <Box paddingLeft={2}><Text color={t.warning}>{msg.content.slice(0, 200)}</Text></Box>
-                    ) : (
-                      <ChatMessage sender="assistant" name="W3X">
-                        <Box flexDirection="column" width="100%">
-                          {msg.thinking && (
-                            <Box marginBottom={msg.content ? 1 : 0}>
-                              <ThinkingBlock content={msg.thinking} label="Reasoning" defaultCollapsed={false} />
-                            </Box>
-                          )}
-                          {msg.content && (
-                            <MessageLines content={normalizeAssistantMarkdown(msg.content)} color={t.foreground} />
-                          )}
-                          {msg.toolCalls.map((tc: ToolCallEntry, i: number) => (
-                            <ToolCall key={`${msg.id}-${i}`} name={tc.name} status={toToolCallStatus(tc.status)} args={tc.args} result={tc.output} duration={tc.duration} />
-                          ))}
-                        </Box>
-                      </ChatMessage>
+                      ) : (
+                        <ChatMessage sender="assistant" name="W3X">
+                          <Box flexDirection="column" width="100%">
+                            {msg.thinking && (
+                              <Box marginBottom={msg.content ? 1 : 0}>
+                                <ThinkingBlock
+                                  content={msg.thinking}
+                                  label="Reasoning"
+                                  defaultCollapsed={false}
+                                />
+                              </Box>
+                            )}
+                            {msg.content && (
+                              <MessageLines
+                                content={normalizeAssistantMarkdown(msg.content)}
+                                color={t.foreground}
+                              />
+                            )}
+                            {msg.toolCalls.map((tc: ToolCallEntry, i: number) => (
+                              <ToolCall
+                                key={`${msg.id}-${i}`}
+                                name={tc.name}
+                                status={toToolCallStatus(tc.status)}
+                                args={tc.args}
+                                result={tc.output}
+                                duration={tc.duration}
+                              />
+                            ))}
+                          </Box>
+                        </ChatMessage>
+                      )}
+                    </Box>
+                  )}
+                </Static>
+
+                {/* Live streaming message — rendered by React for real-time updates */}
+                {live && (
+                  <Box flexDirection="column" marginBottom={1}>
+                    <Box gap={1}>
+                      <Text color={t.accent} bold>
+                        W3X
+                      </Text>
+                    </Box>
+                    {live.thinking && (
+                      <Box paddingLeft={2} marginBottom={live.content ? 1 : 0}>
+                        <ThinkingBlock
+                          content={live.thinking}
+                          label="Reasoning"
+                          defaultCollapsed={false}
+                          streaming={processing && !live.content}
+                          focused
+                        />
+                      </Box>
                     )}
+                    {live.content && (
+                      <Box paddingLeft={2} flexDirection="column">
+                        <MessageLines
+                          content={normalizeAssistantMarkdown(live.content)}
+                          color={t.foreground}
+                          showLiveCursor={processing}
+                          blinkFrame={blinkFrame}
+                          cursorColor={t.accent}
+                        />
+                      </Box>
+                    )}
+                    {live.toolCalls.map((tc: ToolCallEntry, i: number) => (
+                      <ToolCall
+                        key={`l-${i}`}
+                        name={tc.name}
+                        status={toToolCallStatus(tc.status)}
+                        args={tc.args}
+                        result={tc.output}
+                        duration={tc.duration}
+                        focused
+                      />
+                    ))}
                   </Box>
                 )}
-              </Static>
 
-              {/* Live streaming message — rendered by React for real-time updates */}
-              {live && (
-                <Box flexDirection="column" marginBottom={1}>
-                  <Box gap={1}>
-                    <Text color={t.accent} bold>W3X</Text>
+                {/* Thinking indicator — shown immediately when agent starts reasoning */}
+                {showThinking && (
+                  <Box paddingLeft={2} marginBottom={1}>
+                    <Text color={t.accent}>
+                      <ThinkingSpinner />
+                    </Text>
+                    <Text color={t.accent}> Thinking</Text>
+                    <Text color={t.mutedForeground}>...</Text>
                   </Box>
-                  {live.thinking && (
-                    <Box paddingLeft={2} marginBottom={live.content ? 1 : 0}>
-                      <ThinkingBlock content={live.thinking} label="Reasoning" defaultCollapsed={false} streaming={processing && !live.content} focused />
-                    </Box>
-                  )}
-                  {live.content && (
-                    <Box paddingLeft={2} flexDirection="column">
-                      <MessageLines content={normalizeAssistantMarkdown(live.content)} color={t.foreground} showLiveCursor={processing} blinkFrame={blinkFrame} cursorColor={t.accent} />
-                    </Box>
-                  )}
-                  {live.toolCalls.map((tc: ToolCallEntry, i: number) => (
-                    <ToolCall key={`l-${i}`} name={tc.name} status={toToolCallStatus(tc.status)} args={tc.args} result={tc.output} duration={tc.duration} focused />
-                  ))}
-                </Box>
-              )}
+                )}
 
-              {/* Thinking indicator — shown immediately when agent starts reasoning */}
-              {showThinking && (
-                <Box paddingLeft={2} marginBottom={1}>
-                  <Text color={t.accent}><ThinkingSpinner /></Text>
-                  <Text color={t.accent}> Thinking</Text>
-                  <Text color={t.mutedForeground}>...</Text>
-                </Box>
-              )}
+                {/* Status bar while processing */}
+                {processing && (
+                  <Box gap={1} paddingX={1}>
+                    <Text color={t.accent}>{state.toUpperCase()}</Text>
+                    <Text color={t.mutedForeground}>Step {stepCount}</Text>
+                    <Text color={t.mutedForeground}>Tok {fmtN(tokens.total)}</Text>
+                  </Box>
+                )}
 
-              {/* Status bar while processing */}
-              {processing && (
-                <Box gap={1} paddingX={1}>
-                  <Text color={t.accent}>{state.toUpperCase()}</Text>
-                  <Text color={t.mutedForeground}>Step {stepCount}</Text>
-                  <Text color={t.mutedForeground}>Tok {fmtN(tokens.total)}</Text>
-                </Box>
-              )}
+                {/* Scroll indicator when idle with messages */}
+                {!processing && messages.length > 0 && (
+                  <Box paddingX={1}>
+                    <Text dimColor>
+                      ↑↓ scroll · showing last {Math.min(historyLines, doneMsgs.length)} msgs
+                    </Text>
+                  </Box>
+                )}
+              </>
+            )}
+          </ChatThread>
 
-              {/* Scroll indicator when idle with messages */}
-              {!processing && messages.length > 0 && (
-                <Box paddingX={1}>
-                  <Text dimColor>↑↓ scroll · showing last {Math.min(historyLines, doneMsgs.length)} msgs</Text>
-                </Box>
-              )}
-            </>
+          {/* Right: sidebar */}
+          {wide && (
+            <SidebarPanel
+              t={t}
+              logs={logs}
+              dims={dims}
+              tokens={tokens}
+              contextLimit={contextLimit}
+            />
           )}
-        </ChatThread>
-
-        {/* Right: sidebar */}
-        {wide && (
-          <SidebarPanel t={t} logs={logs} dims={dims} tokens={tokens} contextLimit={contextLimit} />
-        )}
-      </Box>
+        </Box>
       </AppShell>
 
       <InputPanel
@@ -563,7 +806,12 @@ function AppContent({ agent }: { agent: BuildAgent }) {
 
       {/* ═══ OVERLAYS — conditionally mounted so internal state resets each open ═══ */}
       {overlay === "commandPalette" && (
-        <CommandPalette commands={paletteCommands} isOpen={true} isActive={overlay === "commandPalette"} onClose={close} />
+        <CommandPalette
+          commands={paletteCommands}
+          isOpen={true}
+          isActive={overlay === "commandPalette"}
+          onClose={close}
+        />
       )}
 
       {overlay === "modelSelector" && (
@@ -571,7 +819,10 @@ function AppContent({ agent }: { agent: BuildAgent }) {
           models={modelOptions}
           selected={agent.getModel()}
           isActive={overlay === "modelSelector"}
-          onSelect={(id) => { setModel(id); close(); }}
+          onSelect={(id) => {
+            setModel(id);
+            close();
+          }}
         />
       )}
 
@@ -579,17 +830,33 @@ function AppContent({ agent }: { agent: BuildAgent }) {
         <ToolApproval
           name={pendingApproval?.description ?? "unknown"}
           isActive={overlay === "approval"}
-          onApprove={() => { approve(); close(); }}
-          onDeny={() => { reject(); close(); }}
+          onApprove={() => {
+            approve();
+            close();
+          }}
+          onDeny={() => {
+            reject();
+            close();
+          }}
         />
       )}
       {overlay === "help" && (
         <Box borderStyle="round" borderColor={t.primary} paddingX={1} flexDirection="column">
-          <Text bold color={t.primary}>Keyboard Shortcuts</Text>
-          <Text color={t.mutedForeground}>{`${formatKeybinding("commandPalette")} command palette`}</Text>
-          <Text color={t.mutedForeground}>{`${formatKeybinding("modelSelector")} model selector`}</Text>
-          <Text color={t.mutedForeground}>{`${formatKeybinding("toggleLogs")} toggle logs sidebar`}</Text>
-          <Text color={t.mutedForeground}>{`${formatKeybinding("cancel")} cancel active run or exit when idle`}</Text>
+          <Text bold color={t.primary}>
+            Keyboard Shortcuts
+          </Text>
+          <Text
+            color={t.mutedForeground}
+          >{`${formatKeybinding("commandPalette")} command palette`}</Text>
+          <Text
+            color={t.mutedForeground}
+          >{`${formatKeybinding("modelSelector")} model selector`}</Text>
+          <Text
+            color={t.mutedForeground}
+          >{`${formatKeybinding("toggleLogs")} toggle logs sidebar`}</Text>
+          <Text
+            color={t.mutedForeground}
+          >{`${formatKeybinding("cancel")} cancel active run or exit when idle`}</Text>
           <Text color={t.mutedForeground}>{`${formatKeybinding("exit")} exit immediately`}</Text>
           <Text dimColor>Esc closes this overlay</Text>
         </Box>

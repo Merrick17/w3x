@@ -28,33 +28,19 @@ const formatTokens = (n: number): string => {
   return String(n);
 };
 
-const estimateCost = (
-  prompt: number,
-  completion: number,
-  model?: string
-): number | null => {
+const estimateCost = (prompt: number, completion: number, model?: string): number | null => {
   if (!model) {
     return null;
   }
-  const key = Object.keys(MODEL_PRICING).find((k) =>
-    model.toLowerCase().includes(k)
-  );
+  const key = Object.keys(MODEL_PRICING).find((k) => model.toLowerCase().includes(k));
   if (!key) {
     return null;
   }
   const pricing = MODEL_PRICING[key];
-  return (
-    (prompt / 1_000_000) * pricing.input +
-    (completion / 1_000_000) * pricing.output
-  );
+  return (prompt / 1_000_000) * pricing.input + (completion / 1_000_000) * pricing.output;
 };
 
-export const TokenUsage = ({
-  prompt,
-  completion,
-  model,
-  showCost = false,
-}: TokenUsageProps) => {
+export const TokenUsage = ({ prompt, completion, model, showCost = false }: TokenUsageProps) => {
   const theme = useTheme();
   const cost = showCost ? estimateCost(prompt, completion, model) : null;
 
@@ -68,9 +54,7 @@ export const TokenUsage = ({
         {" "}
         in /{" "}
       </Text>
-      <Text color={theme.colors.secondary ?? theme.colors.accent}>
-        {formatTokens(completion)}
-      </Text>
+      <Text color={theme.colors.secondary ?? theme.colors.accent}>{formatTokens(completion)}</Text>
       <Text dimColor color={theme.colors.mutedForeground}>
         {" "}
         out

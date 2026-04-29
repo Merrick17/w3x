@@ -46,7 +46,9 @@ export async function detectProject(): Promise<ProjectInfo> {
       else if (files.has("yarn.lock")) info.packageManager = "yarn";
       else if (files.has("bun.lockb")) info.packageManager = "bun";
       else info.packageManager = "npm";
-    } catch { /* keep defaults */ }
+    } catch {
+      /* keep defaults */
+    }
   } else if (files.has("Cargo.toml")) {
     info.language = "rust";
     info.packageManager = "cargo";

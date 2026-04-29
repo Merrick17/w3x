@@ -67,9 +67,7 @@ function compactContent(role: string, text: string): string {
     case "user":
       return `[User query: ${text.slice(0, 200)}]`;
     case "assistant":
-      return text.length > 500
-        ? `[Assistant: ${text.slice(0, 250)}... (compacted)]`
-        : text;
+      return text.length > 500 ? `[Assistant: ${text.slice(0, 250)}... (compacted)]` : text;
     case "tool":
     case "system":
       return text.length > 400

@@ -21,10 +21,13 @@ export function useLineEditor() {
     setHistoryIndex(-1);
   }, []);
 
-  const insert = useCallback((text: string) => {
-    setValue((prev) => prev.slice(0, cursor) + text + prev.slice(cursor));
-    setCursor((c) => c + text.length);
-  }, [cursor]);
+  const insert = useCallback(
+    (text: string) => {
+      setValue((prev) => prev.slice(0, cursor) + text + prev.slice(cursor));
+      setCursor((c) => c + text.length);
+    },
+    [cursor],
+  );
 
   const backspace = useCallback(() => {
     if (cursor === 0) return;
@@ -33,7 +36,10 @@ export function useLineEditor() {
   }, [cursor]);
 
   const moveLeft = useCallback(() => setCursor((c) => Math.max(0, c - 1)), []);
-  const moveRight = useCallback(() => setCursor((c) => Math.min(value.length, c + 1)), [value.length]);
+  const moveRight = useCallback(
+    () => setCursor((c) => Math.min(value.length, c + 1)),
+    [value.length],
+  );
   const moveHome = useCallback(() => setCursor(0), []);
   const moveEnd = useCallback(() => setCursor(value.length), [value.length]);
 
@@ -78,21 +84,40 @@ export function useLineEditor() {
     setText(next);
   }, [clear, history, historyIndex, setText]);
 
-  return useMemo(() => ({
-    value,
-    cursor,
-    setText,
-    clear,
-    insert,
-    backspace,
-    moveLeft,
-    moveRight,
-    moveHome,
-    moveEnd,
-    moveWordLeft,
-    moveWordRight,
-    commitToHistory,
-    historyUp,
-    historyDown,
-  }), [value, cursor, setText, clear, insert, backspace, moveLeft, moveRight, moveHome, moveEnd, moveWordLeft, moveWordRight, commitToHistory, historyUp, historyDown]);
+  return useMemo(
+    () => ({
+      value,
+      cursor,
+      setText,
+      clear,
+      insert,
+      backspace,
+      moveLeft,
+      moveRight,
+      moveHome,
+      moveEnd,
+      moveWordLeft,
+      moveWordRight,
+      commitToHistory,
+      historyUp,
+      historyDown,
+    }),
+    [
+      value,
+      cursor,
+      setText,
+      clear,
+      insert,
+      backspace,
+      moveLeft,
+      moveRight,
+      moveHome,
+      moveEnd,
+      moveWordLeft,
+      moveWordRight,
+      commitToHistory,
+      historyUp,
+      historyDown,
+    ],
+  );
 }
